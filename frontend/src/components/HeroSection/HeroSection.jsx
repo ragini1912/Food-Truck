@@ -39,10 +39,10 @@ const locations = [
 ];
 
 const FoodTruckHero = () => {
-  const [distanceFilter] = useState(10);
   const [mapView, setMapView] = useState("map");
   const center = [47.6062, -122.3321]; // Seattle coordinates
 
+  const [distanceFilter] = useState(10);
   const filteredLocations = locations.filter(
     (loc) => loc.distance <= distanceFilter
   );

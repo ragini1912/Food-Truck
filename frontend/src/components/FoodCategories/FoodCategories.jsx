@@ -28,12 +28,15 @@ const foodCategories = [
   { id: 12, name: "Ice Cream", image: icecreamImg },
 ];
 
-const splitCategories = (arr) => {
-  const half = Math.ceil(arr.length / 2);
-  return [arr.slice(0, half), arr.slice(half)];
+const splitCategories = (arr, size) => {
+  const result = [];
+  for (let i = 0; i < arr.length; i += size) {
+    result.push(arr.slice(i, i + size));
+  }
+  return result;
 };
 
-const [row1, row2] = splitCategories(foodCategories);
+const rows = splitCategories(foodCategories, Math.ceil(foodCategories.length / 2)); // Split all categories into 2 rows
 
 const FoodCategoryShowcase = () => {
   return (
@@ -42,9 +45,9 @@ const FoodCategoryShowcase = () => {
       <p className="category-subtitle">
         Discover the joy of mobile dining experiences
       </p>
-      <div className="category-scroll-rows">
-        {[row1, row2].map((row, idx) => (
-          <div className="category-scroll-row" key={idx}>
+      <div className="category-slider-rows">
+        {rows.map((row, idx) => (
+          <div className="category-slider-row" key={idx}>
             {row.map((category) => (
               <div className="category-card" key={category.id}>
                 <img

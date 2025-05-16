@@ -3,6 +3,13 @@ import "./CateringCards.css";
 import tastyBitesImg from "../../assets/images/card1.png";
 import savaAustinImg from "../../assets/images/card2.png";
 import covaSmartImg from "../../assets/images/card1.png";
+import locationIcon from "../../assets/images/location.png";
+import ovenIcon from "../../assets/images/oven.png";
+import freezerIcon from "../../assets/images/freezer.png";
+import tapIcon from "../../assets/images/tap-sink.png";
+import benchesIcon from "../../assets/images/benches.png";
+import widthIcon from "../../assets/images/widthIcon.png";
+import rulerIcon from "../../assets/images/rulerIcon.png";
 
 const CateringCards = () => {
   const cardsData = [
@@ -62,6 +69,8 @@ const CateringCards = () => {
     },
   ];
 
+  const featureIcons = [ovenIcon, freezerIcon, tapIcon, benchesIcon];
+
   return (
     <div className="catering-container">
       <div className="section-header">
@@ -72,10 +81,22 @@ const CateringCards = () => {
       <div className="cards-container">
         {cardsData.map((card, index) => (
           <div className="catering-card" key={index}>
-            <div className="card-image">
-              <img src={card.image} alt={card.title} />
-              <p className="location">{card.location}</p>
+            <div className="card-image-wrapper">
+              <img
+                src={card.image}
+                alt={card.title}
+                className="card-main-image"
+              />
+              <div className="overlay-info">
+                <img
+                  src={locationIcon}
+                  alt="location"
+                  className="location-icon"
+                />
+                <span className="location-text">{card.location}</span>
+              </div>
             </div>
+
             <div className="card-header">
               <h3>{card.title}</h3>
               <p className="subtitle">{card.subtitle}</p>
@@ -89,13 +110,28 @@ const CateringCards = () => {
             <hr />
             <div className="card-dimensions">
               {card.dimensions.map((dimension, i) => (
-                <span key={i}>{dimension}</span>
+                <span key={i}>
+                  {" "}
+                  <img
+                    src={i === 0 ? rulerIcon : widthIcon}
+                    alt={i === 0 ? "Length" : "Width"}
+                    className="dimension-icon"
+                  />
+                  {dimension}
+                </span>
               ))}
             </div>
 
-            <div className="card-features">
+            <div className="card-features-grid">
               {card.features.map((feature, i) => (
-                <span key={i}>{feature}</span>
+                <div className="feature-item" key={i}>
+                  <img
+                    src={featureIcons[i]}
+                    alt={feature}
+                    className="feature-icon"
+                  />
+                  <span>{feature}</span>
+                </div>
               ))}
             </div>
 
