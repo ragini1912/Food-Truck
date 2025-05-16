@@ -34,7 +34,7 @@ const MapView = () => {
   return (
     <div className="home-wrapper">
       <div className="home-map-placeholder">
-        <LoadScript googleMapsApiKey="AIzaSyB5gZWs1YoMUpLhpZhladgQmVLFKyUsLGc">
+        <LoadScript googleMapsApiKey={process.env.REACT_APP_GOOGLE_API_KEY}>
           <GoogleMap
             mapContainerStyle={containerStyle}
             center={userLocation}
