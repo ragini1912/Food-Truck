@@ -1,0 +1,376 @@
+@import url("https://fonts.googleapis.com/css2?family=Kumbh+Sans:wght@400;500;700&family=Lato:wght@400;700&display=swap");
+
+.footer-container {
+  color: #333;
+  padding: 50px 20px;
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-position: bottom center;
+  padding: 0px 0px 0px 0px;
+  width: 100%;
+  margin: 0;
+  box-sizing: border-box;
+}
+
+.footer-content {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  max-width: 1240px;
+  margin: auto;
+  padding-top: 80px;
+  gap: 100px;
+}
+
+.newsletter-section {
+  flex: 1;
+  min-width: 250px;
+  margin-right: 30px;
+}
+
+.newsletter-text {
+  font-family: khumbh-sans;
+  font-weight: 400;
+  font-size: 17;
+  line-height: 18px;
+  letter-spacing: 0%;
+  margin-bottom: 25px;
+  color: #000000;
+}
+
+.subscribe-form {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  border-bottom: 1px solid #ddd;
+}
+
+.email-input {
+  border: none;
+  padding: 10px 0;
+  width: 170px;
+  background-color: transparent;
+  outline: none;
+  font-family: kumbh-sans;
+  font-weight: 400;
+  font-size: 16px;
+  line-height: 100%;
+  letter-spacing: 0%;
+  color: #000000;
+  margin-left: 20px;
+}
+
+.email-input::placeholder {
+  color: #000000;
+  opacity: 1; /* ensures full opacity in all browsers */
+}
+
+.signup-btn {
+  margin-bottom: 8px;
+  font-family: kumbh-sans;
+  font-weight: 400;
+  font-size: 18px;
+  letter-spacing: 0%;
+  text-align: center;
+  vertical-align: middle;
+  text-transform: capitalize;
+  background-color: white;
+  border: none;
+  padding: 8px 12px;
+  cursor: pointer;
+  transition: background 0.3s ease;
+  color: #222222;
+}
+
+.signup-btn:hover {
+  background-color: #f3f3f3;
+}
+
+/* QUICK LINKS */
+
+.quick-links {
+  max-width: 410px;
+  padding-left: 50px;
+  flex: 2;
+  display: flex;
+  flex-direction: column;
+}
+
+.section-title {
+  font-family: khumbh-sans;
+  font-weight: 700;
+  font-size: 20;
+  letter-spacing: -0_4;
+  text-transform: capitalize;
+  color: #000000;
+  margin-bottom: 50px;
+}
+
+.links-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(120px, 1fr));
+  gap: 10px 40px;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  font-family: kumbh-sans;
+  font-weight: 400;
+  font-size: 16px;
+  line-height: 35px;
+  letter-spacing: 0%;
+  text-transform: uppercase;
+  color: #000000;
+}
+
+.links-list li {
+  display: flex;
+  align-items: center;
+  font-size: 16px;
+}
+
+.links-list li::before {
+  content: "";
+  display: inline-block;
+  width: 6px;
+  height: 9.5px;
+  border-top: 1px solid #33d8dd;
+  background-color: #33d8dd;
+  transform: skew(-20deg);
+  margin-right: 8px;
+}
+
+.links-list a {
+  text-decoration: none;
+  color: #2c2c2c;
+  transition: color 0.3s ease;
+}
+
+/* CONTACT SECTION */
+
+.contact-section {
+  flex: 1;
+  min-width: 250px;
+  display: flex;
+  flex-direction: column;
+}
+
+.contact-image {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.contact-image::before {
+  content: "";
+  display: block;
+  width: 50px;
+  height: 50px;
+  background-image: url("../../assets/images/contact-image.png");
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  opacity: 0.6;
+}
+
+.contact-info {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  font-size: 14px;
+}
+
+.contact-text {
+  font-family: kumbh-sans;
+  font-weight: 700;
+  font-size: 17px;
+  margin-bottom: -14px;
+}
+
+.contact-phone {
+  color: #e53935;
+  font-family: khumbh-sans;
+  font-weight: 700;
+  font-size: 28px;
+}
+
+.contact-email {
+  font-family: khumbh-sans;
+  font-weight: 400;
+  font-size: 17px;
+  letter-spacing: 0%;
+  color: #000000;
+  margin-top: 20px;
+}
+
+/* FOOTER BOTTOM */
+.footer-bottom {
+  position: relative;
+  width: 100%;
+  height: auto;
+  min-height: 300px; /* Adjust based on your image aspect ratio */
+  background-color: #e5b979;
+  overflow: hidden;
+}
+
+.scrolling-background {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 200%;
+  background-image: url("../../assets/images/bg-footer.png");
+  background-repeat: repeat-x;
+  background-position: center;
+  background-size: contain; /* ensures full image is visible */
+  animation: scrollPingPong 60s ease-in-out infinite;
+}
+
+@keyframes scrollPingPong {
+  0% {
+    transform: translateX(0%);
+  }
+  50% {
+    transform: translateX(-50%);
+  }
+  100% {
+    transform: translateX(0%);
+  }
+}
+
+/* Responsive styles */
+@media (max-width: 768px) {
+  .footer-container {
+    padding: 40px 20px;
+  }
+
+  .footer-content {
+    padding-top: 60px;
+    gap: 50px;
+    flex-direction: column;
+  }
+
+  .newsletter-section {
+    margin-right: 0;
+    max-width: 100%;
+  }
+
+  .subscribe-form {
+    gap: 30px;
+    flex-direction: column;
+    align-items: flex-start;
+    padding-bottom: 15px;
+  }
+
+  .email-input {
+    width: 100%;
+    margin-left: 0;
+    padding: 12px 0;
+    font-size: 15px;
+  }
+
+  .signup-btn {
+    width: 100%;
+    padding: 12px;
+    font-size: 16px;
+  }
+
+  .quick-links {
+    padding-left: 0;
+    max-width: 100%;
+  }
+
+  .section-title {
+    margin-bottom: 30px;
+    font-size: 18px;
+  }
+
+  .links-list {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px 30px;
+    font-size: 14px;
+    line-height: 30px;
+  }
+
+  .contact-section {
+    width: 100%;
+  }
+
+  .contact-image::before {
+    width: 40px;
+    height: 40px;
+  }
+
+  .contact-text {
+    font-size: 15px;
+  }
+
+  .contact-phone {
+    font-size: 24px;
+  }
+
+  .contact-email {
+    font-size: 15px;
+  }
+
+  .footer-bottom {
+    min-height: 220px;
+  }
+}
+
+/* Mobile Styles */
+@media (max-width: 480px) {
+  .footer-container {
+    padding: 30px 15px;
+  }
+
+  .footer-content {
+    padding-top: 40px;
+    gap: 40px;
+  }
+
+  .newsletter-text {
+    font-size: 15px;
+    line-height: 1.4;
+  }
+
+  .subscribe-form {
+    gap: 20px;
+  }
+
+  .email-input {
+    font-size: 14px;
+  }
+
+  .signup-btn {
+    font-size: 15px;
+    padding: 10px;
+  }
+
+  .section-title {
+    font-size: 16px;
+    margin-bottom: 25px;
+  }
+
+  .links-list {
+    grid-template-columns: 1fr;
+    gap: 12px;
+    font-size: 13px;
+    line-height: 28px;
+  }
+
+  .contact-text {
+    font-size: 14px;
+  }
+
+  .contact-phone {
+    font-size: 22px;
+  }
+
+  .contact-email {
+    font-size: 14px;
+  }
+
+  .footer-bottom {
+    min-height: 180px;
+  }
+}

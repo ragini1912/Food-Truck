@@ -1,0 +1,94 @@
+.distance-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 2rem;
+}
+
+.distance-content {
+  background-color: #e3a85f;
+  border-radius: 20px;
+  padding: 1.5rem;
+  width: 320px;
+  text-align: center;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.distance-image img {
+  width: 100%;
+  max-height: 160px;
+  object-fit: cover;
+  border-radius: 20px;
+}
+
+.distance-title {
+  font-size: 24px;
+  font-weight: 500;
+  color: #333;
+  margin: 1.5rem 0 1rem;
+}
+
+.distance-slider {
+  width: 90%;
+  margin: 0 auto 1.2rem;
+  position: relative;
+}
+
+input[type="range"] {
+  width: 100%;
+  appearance: none;
+  height: 6px;
+  background: #ffffff;
+  border-radius: 5px;
+  outline: none;
+  margin-top: 10px;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  appearance: none;
+  height: 20px;
+  width: 20px;
+  border-radius: 50%;
+  background: orange;
+  cursor: pointer;
+  border: none;
+}
+
+input[type="range"]::-moz-range-thumb {
+  height: 20px;
+  width: 20px;
+  border-radius: 50%;
+  background: orange;
+  cursor: pointer;
+  border: none;
+}
+
+.slider-value {
+  font-size: 14px;
+  background-color: white;
+  padding: 2px 8px;
+  border-radius: 8px;
+  color: orange;
+  font-weight: 600;
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  top: -25px;
+}
+
+.availability-btn {
+  width: 100%;
+  padding: 10px 0;
+  background-color: white;
+  color: orange;
+  font-size: 16px;
+  border: 2px solid orange;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: 0.3s ease;
+}
+
+.availability-btn:hover {
+  background-color: orange;
+  color: white;
+}
