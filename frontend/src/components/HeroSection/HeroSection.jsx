@@ -55,26 +55,26 @@ const FoodTruckHero = () => {
         <h2>SERVICES</h2>
       </div>
 
-      {/* Map Controls */}
-      <div className="map-controls">
-        <button
-          className={`map-btn ${mapView === "map" ? "active" : ""}`}
-          onClick={() => setMapView("map")}
-        >
-          Map
-        </button>
-        <button
-          className={`map-btn ${mapView === "satellite" ? "active" : ""}`}
-          onClick={() => setMapView("satellite")}
-        >
-          Satellite
-        </button>
-      </div>
-
       {/* Main Content */}
       <div className="hero-content">
         {/* Distance Checker */}
         <DistanceCheker />
+
+        {/* Map Controls */}
+        <div className="map-controls">
+          <button
+            className={`map-btn ${mapView === "map" ? "active" : ""}`}
+            onClick={() => setMapView("map")}
+          >
+            Map
+          </button>
+          <button
+            className={`map-btn ${mapView === "satellite" ? "active" : ""}`}
+            onClick={() => setMapView("satellite")}
+          >
+            Satellite
+          </button>
+        </div>
 
         {/* Location List */}
         <div className="location-list">

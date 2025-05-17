@@ -325,7 +325,9 @@
   min-width: 100%;
   max-width: 400px;
   margin: 0;
-  /* Keep your existing styles for height, border-radius, etc. */
+  height: 200px; /* Reduced height */
+  max-width: none;
+  /* Keep your existing styles for border-radius, etc. */
 }
 
 .testimonial-slide {

@@ -1,94 +1,101 @@
-.distance-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 2rem;
-}
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&family=Roboto:wght@400;700&display=swap");
 
-.distance-content {
-  background-color: #e3a85f;
-  border-radius: 20px;
-  padding: 1.5rem;
-  width: 320px;
-  text-align: center;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-}
-
-.distance-image img {
-  width: 100%;
-  max-height: 160px;
-  object-fit: cover;
-  border-radius: 20px;
-}
-
-.distance-title {
-  font-size: 24px;
-  font-weight: 500;
-  color: #333;
-  margin: 1.5rem 0 1rem;
-}
-
-.distance-slider {
+.distance-checker {
+  background-color: #e5b979;
+  border-radius: 12px;
+  padding: 20px;
+  max-width: 320px;
   width: 90%;
-  margin: 0 auto 1.2rem;
-  position: relative;
+  margin: auto;
+  text-align: center;
+  font-family: "Poppins", sans-serif;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
-input[type="range"] {
+.truck-image img {
   width: 100%;
-  appearance: none;
-  height: 6px;
-  background: #ffffff;
-  border-radius: 5px;
-  outline: none;
-  margin-top: 10px;
+  object-fit: cover;
 }
 
-input[type="range"]::-webkit-slider-thumb {
-  appearance: none;
-  height: 20px;
-  width: 20px;
-  border-radius: 50%;
-  background: orange;
-  cursor: pointer;
-  border: none;
+.distance-label {
+  margin-top: 16px;
+  font-family: Roboto;
+  font-weight: 400;
+  font-size: 30px;
+  color: #1e1e1e;
 }
 
-input[type="range"]::-moz-range-thumb {
-  height: 20px;
-  width: 20px;
-  border-radius: 50%;
-  background: orange;
-  cursor: pointer;
-  border: none;
+.slider-container {
+  position: relative;
+  width: 100%;
+  margin-top: 25px;
+  margin-bottom: 50px;
 }
 
 .slider-value {
-  font-size: 14px;
-  background-color: white;
-  padding: 2px 8px;
-  border-radius: 8px;
-  color: orange;
-  font-weight: 600;
   position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
   top: -25px;
+  left: calc(50% - 15px);
+  background-color: #ffffff;
+  color: #ff8d00;
+  padding: 2px 8px;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 14px;
 }
 
-.availability-btn {
+.slider {
   width: 100%;
-  padding: 10px 0;
-  background-color: white;
-  color: orange;
-  font-size: 16px;
-  border: 2px solid orange;
+  height: 8px;
+  background: #ffffff;
+  border-radius: 10px;
+  appearance: none;
+  outline: none;
+  cursor: pointer;
+}
+
+.slider::-webkit-slider-thumb {
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  background: #ff8d00;
+  border-radius: 50%;
+  cursor: pointer;
+  border: none;
+}
+
+.slider::-moz-range-thumb {
+  width: 20px;
+  height: 20px;
+  background: #ff8d00;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.slider::-ms-thumb {
+  width: 20px;
+  height: 20px;
+  background: #ff8d00;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.check-button {
+  font-family: Roboto;
+  background-color: #ffffff;
+  color: #feb351;
+  border: none;
+  padding: 12px 0;
+  width: 100%;
+  font-size: 20px;
+  font-weight: 600;
   border-radius: 6px;
   cursor: pointer;
-  transition: 0.3s ease;
+  transition: background-color 0.3s ease;
 }
 
-.availability-btn:hover {
-  background-color: orange;
-  color: white;
+.check-button:hover {
+  background-color: #f8f8f8;
 }
