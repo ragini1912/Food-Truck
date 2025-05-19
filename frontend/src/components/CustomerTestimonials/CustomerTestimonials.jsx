@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import "./CustomerTestimonials.css";
 import kellyImage from "../../assets/images/review-1.png";
 import martaImage from "../../assets/images/review-2.png";
@@ -12,8 +12,11 @@ const CustomerTestimonials = () => {
       title: "Cake Designer",
       rating: "5 star of 20 review",
       image: kellyImage,
-      quote:
-        "Luctus ipsum dolor sit amet, adipiscing elit. In luctus molestie dui, eu rhoncus orci feugiat at. Pellentesque fringilla diam at nisi malesuada fermentum.",
+      quote: `Luctus ipsum dolor sit amet, adipiscing elit. In luctus
+molestie dui, eu rhoncus orci feugiat at. Pellentesque
+fringilla diam at nisi malesuada fermentum. Morbi
+elementum bibendum enim non sollicitudin morbi
+elementum.`,
     },
     {
       id: 2,
@@ -21,8 +24,11 @@ const CustomerTestimonials = () => {
       title: "CEO, Foxdiesel",
       rating: "5 star of 20 review",
       image: martaImage,
-      quote:
-        "Donec ipsum dolor sit amet, adipiscing elit. In luctus molestie dui, eu rhoncus orci feugiat at. Pellentesque fringilla diam at nisi malesuada fermentum.",
+      quote: `Donec ipsum dolor sit amet, adipiscing elit. In luctus
+molestie dui, eu rhoncus orci feugiat at. Pellentesque
+fringilla diam at nisi malesuada fermentum. Morbi
+elementum bibendum enim non sollicitudin morbi
+elementum.`,
     },
     {
       id: 3,
@@ -30,69 +36,100 @@ const CustomerTestimonials = () => {
       title: "Food Reviewer",
       rating: "5 star of 20 review",
       image: johnImage,
-      quote:
-        "Lorem ipsum dolor sit amet, adipiscing elit. In luctus molestie dui, eu rhoncus orci feugiat at. Pellentesque fringilla diam at nisi malesuada fermentum.",
+      quote: `Lorem ipsum dolor sit amet, adipiscing elit. In luctus
+molestie dui, eu rhoncus orci feugiat at. Pellentesque
+fringilla diam at nisi malesuada fermentum. Morbi
+elementum bibendum enim non sollicitudin morbi
+elementum.`,
     },
     {
       id: 4,
-      name: "Kelly Mitter",
-      title: "Cake Designer",
-      rating: "5 star of 20 review",
+      name: "Emily Rhodes",
+      title: "Blogger",
+      rating: "5 star of 15 review",
       image: kellyImage,
-      quote:
-        "Luctus ipsum dolor sit amet, adipiscing elit. In luctus molestie dui, eu rhoncus orci feugiat at. Pellentesque fringilla diam at nisi malesuada fermentum.",
+      quote: `Luctus ipsum dolor sit amet, adipiscing elit. In luctus
+molestie dui, eu rhoncus orci feugiat at. Pellentesque
+fringilla diam at nisi malesuada fermentum. Morbi
+elementum bibendum enim non sollicitudin morbi
+elementum.`,
     },
     {
       id: 5,
-      name: "Marta May",
-      title: "CEO, Foxdiesel",
-      rating: "5 star of 20 review",
-      image: martaImage,
-      quote:
-        "Donec ipsum dolor sit amet, adipiscing elit. In luctus molestie dui, eu rhoncus orci feugiat at. Pellentesque fringilla diam at nisi malesuada fermentum.",
+      name: "David Stone",
+      title: "Chef",
+      rating: "5 star of 40 review",
+      image: johnImage,
+      quote: `Donec ipsum dolor sit amet, adipiscing elit. In luctus
+molestie dui, eu rhoncus orci feugiat at. Pellentesque
+fringilla diam at nisi malesuada fermentum. Morbi
+elementum bibendum enim non sollicitudin morbi
+elementum.`,
     },
     {
       id: 6,
-      name: "John Morris",
-      title: "Food Reviewer",
-      rating: "5 star of 20 review",
-      image: johnImage,
-      quote:
-        "Lorem ipsum dolor sit amet, adipiscing elit. In luctus molestie dui, eu rhoncus orci feugiat at. Pellentesque fringilla diam at nisi malesuada fermentum.",
+      name: "Alice Ray",
+      title: "Food Critic",
+      rating: "5 star of 12 review",
+      image: martaImage,
+      quote: `Lorem ipsum dolor sit amet, adipiscing elit. In luctus
+molestie dui, eu rhoncus orci feugiat at. Pellentesque
+fringilla diam at nisi malesuada fermentum. Morbi
+elementum bibendum enim non sollicitudin morbi
+elementum.`,
     },
   ];
 
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [cardsPerView, setCardsPerView] = useState(1);
   const timeoutRef = useRef(null);
+  const containerRef = useRef(null);
+  const isHovering = useRef(false);
+  const startX = useRef(null);
+
+  useEffect(() => {
+    setCardsPerView(1);
+    const handleResize = () => setCardsPerView(1);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   const resetTimeout = () => {
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current);
-    }
+    if (timeoutRef.current) clearTimeout(timeoutRef.current);
   };
 
   useEffect(() => {
-    resetTimeout();
-    timeoutRef.current = setTimeout(
-      () => setCurrentIndex((prev) => (prev + 1) % testimonials.length),
-      3000
-    );
-
-    return () => {
-      resetTimeout();
-    };
-  }, [currentIndex, testimonials.length]);
+    if (!isHovering.current) {
+      timeoutRef.current = setTimeout(() => {
+        setCurrentIndex(
+          (prev) => (prev + 1) % Math.ceil(testimonials.length / cardsPerView)
+        );
+      }, 4000);
+    }
+    return () => resetTimeout();
+  }, [currentIndex, cardsPerView, testimonials.length]);
 
   const handlePrev = () => {
     resetTimeout();
     setCurrentIndex((prev) =>
-      prev === 0 ? testimonials.length - 1 : prev - 1
+      prev === 0 ? Math.ceil(testimonials.length / cardsPerView) - 1 : prev - 1
     );
   };
 
   const handleNext = () => {
     resetTimeout();
-    setCurrentIndex((prev) => (prev + 1) % testimonials.length);
+    setCurrentIndex(
+      (prev) => (prev + 1) % Math.ceil(testimonials.length / cardsPerView)
+    );
+  };
+
+  const handleTouchStart = (e) => (startX.current = e.touches[0].clientX);
+  const handleTouchEnd = (e) => {
+    if (!startX.current) return;
+    const deltaX = startX.current - e.changedTouches[0].clientX;
+    if (deltaX > 50) handleNext();
+    else if (deltaX < -50) handlePrev();
+    startX.current = null;
   };
 
   return (
@@ -103,53 +140,58 @@ const CustomerTestimonials = () => {
           <span>Delighted</span> Customers
         </h1>
       </div>
-
-      <div className="testimonials-wrapper">
-        <div className="testimonials-slider">
-          <div
-            className="testimonials-slider-inner"
-            style={{ transform: `translateX(-${currentIndex * 100}%)` }}
-          >
-            {testimonials.map((testimonial) => (
-              <div className="testimonial-slide" key={testimonial.id}>
-                <div className="testimonial-card">
-                  <div className="customer-info">
-                    <div className="customer-image">
-                      <img src={testimonial.image} alt={testimonial.name} />
-                    </div>
-                    <div className="customer-details">
-                      <h3>{testimonial.name}</h3>
-                      <p className="customer-title">{testimonial.title}</p>
-                      <p className="customer-rating">{testimonial.rating}</p>
-                    </div>
-                  </div>
-                  <div className="customer-quote">
-                    <p>{testimonial.quote}</p>
-                  </div>
+      <div
+        className="testimonials-slider-wrapper"
+        ref={containerRef}
+        onMouseEnter={() => (isHovering.current = true)}
+        onMouseLeave={() => (isHovering.current = false)}
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
+      >
+        <div
+          className="testimonials-slider-inner"
+          style={{
+            transform: `translateX(-${currentIndex * (100 / cardsPerView)}%)`,
+            width: `${(testimonials.length / cardsPerView) * 100}%`,
+          }}
+        >
+          {testimonials.map((t) => (
+            <div className="testimonial-card" key={t.id}>
+              <div className="customer-info">
+                <div className="customer-image">
+                  <img src={t.image} alt={t.name} />
+                </div>
+                <div className="customer-details">
+                  <h3>{t.name}</h3>
+                  <p className="customer-title">{t.title}</p>
+                  <p className="customer-rating">{t.rating}</p>
                 </div>
               </div>
-            ))}
-          </div>
+              <div className="customer-quote">
+                <p>{t.quote}</p>
+              </div>
+            </div>
+          ))}
         </div>
-
         <div className="testimonial-controls">
-          <button onClick={handlePrev} className="nav-btn">
+          <button onClick={handlePrev} className="nav-btn left">
             {"<"}
           </button>
-          <button onClick={handleNext} className="nav-btn">
+          <button onClick={handleNext} className="nav-btn right">
             {">"}
           </button>
         </div>
-      </div>
-
-      <div className="testimonial-dots">
-        {testimonials.map((_, index) => (
-          <span
-            key={index}
-            className={`dot ${index === currentIndex ? "active" : ""}`}
-            onClick={() => setCurrentIndex(index)}
-          ></span>
-        ))}
+        <div className="testimonial-dots">
+          {Array.from({
+            length: Math.ceil(testimonials.length / cardsPerView),
+          }).map((_, index) => (
+            <span
+              key={index}
+              className={`dot ${index === currentIndex ? "active" : ""}`}
+              onClick={() => setCurrentIndex(index)}
+            ></span>
+          ))}
+        </div>
       </div>
     </div>
   );

@@ -77,26 +77,16 @@ const CateringCards = () => {
         <h2>Explore The Catering Cuisines</h2>
         <p>Discover The Joy Of Mobile Dining Experiences</p>
       </div>
-
       <div className="cards-container">
         {cardsData.map((card, index) => (
           <div className="catering-card" key={index}>
             <div className="card-image-wrapper">
-              <img
-                src={card.image}
-                alt={card.title}
-                className="card-main-image"
-              />
+              <img src={card.image} alt={card.title} className="card-main-image" />
               <div className="overlay-info">
-                <img
-                  src={locationIcon}
-                  alt="location"
-                  className="location-icon"
-                />
+                <img src={locationIcon} alt="location" className="location-icon" />
                 <span className="location-text">{card.location}</span>
               </div>
             </div>
-
             <div className="card-header">
               <h3>{card.title}</h3>
               <p className="subtitle">{card.subtitle}</p>
@@ -111,7 +101,6 @@ const CateringCards = () => {
             <div className="card-dimensions">
               {card.dimensions.map((dimension, i) => (
                 <span key={i}>
-                  {" "}
                   <img
                     src={i === 0 ? rulerIcon : widthIcon}
                     alt={i === 0 ? "Length" : "Width"}
@@ -121,20 +110,14 @@ const CateringCards = () => {
                 </span>
               ))}
             </div>
-
             <div className="card-features-grid">
               {card.features.map((feature, i) => (
                 <div className="feature-item" key={i}>
-                  <img
-                    src={featureIcons[i]}
-                    alt={feature}
-                    className="feature-icon"
-                  />
+                  <img src={featureIcons[i]} alt={feature} className="feature-icon" />
                   <span>{feature}</span>
                 </div>
               ))}
             </div>
-
             <button className="view-more-btn">View More</button>
           </div>
         ))}

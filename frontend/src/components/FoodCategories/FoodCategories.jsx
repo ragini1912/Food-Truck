@@ -36,7 +36,7 @@ const splitCategories = (arr, size) => {
   return result;
 };
 
-const rows = splitCategories(foodCategories, Math.ceil(foodCategories.length / 2)); // Split all categories into 2 rows
+const rows = splitCategories(foodCategories, Math.ceil(foodCategories.length / 2));
 
 const FoodCategoryShowcase = () => {
   return (

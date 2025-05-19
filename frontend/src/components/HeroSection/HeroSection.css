@@ -178,32 +178,3 @@
   height: 100%;
   width: 100%;
 }
-
-/* Responsive styles */
-@media (min-width: 768px) {
-  .hero-content {
-    flex-direction: row;
-  }
-
-  .distance-checker-container {
-    flex: 0 0 300px;
-  }
-
-  .map-container {
-    flex: 1;
-  }
-}
-
-@media (max-width: 480px) {
-  .hero-header h1 {
-    font-size: 2rem;
-  }
-
-  .hero-header h2 {
-    font-size: 1.5rem;
-  }
-
-  .location-list {
-    grid-template-columns: 1fr;
-  }
-}

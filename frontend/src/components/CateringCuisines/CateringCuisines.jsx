@@ -12,8 +12,7 @@ const CateringCuisines = () => {
           <h1>Catering</h1>
           <h1>Cuisines</h1>
           <p className="description">
-            Consectetur, adipisci velit, sed quia non numquam eius modi tempora
-            incidunt ut labore et dolore magnam aliquam quaerat voluptatem.
+            Consectetur, adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore et dolore magnam aliquam quaerat voluptatem.
           </p>
         </div>
         <div className="images">
@@ -24,7 +23,6 @@ const CateringCuisines = () => {
             <img src={footerImage} alt="Catering-footer" />
           </div>
         </div>
-
         <div className="image-content">
           <img src={cuisinesImage} alt="Cuisines" />
         </div>

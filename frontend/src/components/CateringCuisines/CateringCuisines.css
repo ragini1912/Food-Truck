@@ -28,21 +28,19 @@
 
 .text-content h1 {
   margin: 0;
-  color: #000000;
+  color: #000;
   font-family: Inter;
   font-weight: 400;
   font-size: 79.41px;
   line-height: 80px;
-  letter-spacing: 0%;
 }
 
 .text-content .description {
-  color: #000000;
+  color: #000;
   font-family: poppins;
   font-weight: 400;
   font-size: 16px;
   line-height: 1.5;
-  letter-spacing: 0%;
 }
 
 .catering-image img {
@@ -75,84 +73,67 @@
   object-fit: cover;
 }
 
-/* Tablet Styles */
 @media (max-width: 768px) {
   .catering-cuisines-container {
     padding: 3rem 1.5rem;
   }
-
   .content-wrapper {
     gap: 2rem;
     flex-direction: column;
   }
-
   .text-content {
     text-align: center;
     min-width: 250px;
   }
-
   .text-content h1 {
     font-size: 60px;
     line-height: 1.2;
   }
-
   .text-content .description {
     font-size: 14px;
     max-width: 600px;
     margin: 0 auto;
   }
-
   .catering-image img {
     width: 200px;
   }
-
   .footer-image img {
     width: 120px;
     margin-top: 3rem;
   }
-
   .image-content {
     min-width: 250px;
   }
 }
 
-/* Mobile Styles */
 @media (max-width: 480px) {
   .catering-cuisines-container {
     padding: 2rem 1rem;
   }
-
   .content-wrapper {
     gap: 1.5rem;
   }
-
   .text-content {
     min-width: 200px;
   }
-
   .text-content h1 {
     font-size: 40px;
     line-height: 1.2;
   }
-
   .text-content .description {
     font-size: 12px;
     line-height: 1.5;
   }
-
   .catering-image img {
     width: 180px;
   }
-
   .footer-image img {
     width: 100px;
     margin-top: 2rem;
   }
-
   .image-content {
     min-width: 200px;
   }
-
   .image-content img {
     max-width: 100%;
   }
