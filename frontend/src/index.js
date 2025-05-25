@@ -1,11 +1,24 @@
 import React from "react";
-import ReactDOM from "react-dom/client";
-import "./index.css";
+import { createRoot } from "react-dom/client"; // Ensures you're using the newer React 18 API
 import App from "./App";
+import "./index.css"; // Assuming you have global styles here
+import { DarkModeContextProvider } from "./context/darkModeContext"; // Context provider from index (2).js
 
-const root = ReactDOM.createRoot(document.getElementById("root"));
+const container = document.getElementById("root");
+
+// Check if the root container exists (good practice from index (2).js)
+if (!container) {
+  throw new Error(
+    "Failed to find the root element. Ensure your public/index.html has an element with id='root'."
+  );
+}
+
+const root = createRoot(container);
+
 root.render(
   <React.StrictMode>
-    <App />
+    <DarkModeContextProvider>
+      <App />
+    </DarkModeContextProvider>
   </React.StrictMode>
 );

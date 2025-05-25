@@ -10,8 +10,10 @@ import tapIcon from "../../assets/images/tap-sink.png";
 import benchesIcon from "../../assets/images/benches.png";
 import widthIcon from "../../assets/images/widthIcon.png";
 import rulerIcon from "../../assets/images/rulerIcon.png";
+import { useNavigate } from "react-router-dom";
 
 const CateringCards = () => {
+  const navigate = useNavigate();
   const cardsData = [
     {
       title: "Tasty bites",
@@ -118,7 +120,7 @@ const CateringCards = () => {
                 </div>
               ))}
             </div>
-            <button className="view-more-btn">View More</button>
+            <button className="view-more-btn" onClick={() => navigate("/restaurant")}>View More</button>
           </div>
         ))}
       </div>
