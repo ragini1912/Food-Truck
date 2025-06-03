@@ -9,8 +9,8 @@ const PizzaMenu = () => {
     {
       id: 1,
       title: "Italian Spicy Pizza",
-      originalPrice: "$11.00",
-      discountedPrice: "$10.00",
+      originalPrice: "₹11.00",
+      discountedPrice: "₹10.00",
       description:
         "Donce et mûn maximus, congue est estoum mattis nunc. Passerint quam quis quam versandis iringlia. Nordu vestibulum.",
       image: spicyPizza1,
@@ -18,8 +18,8 @@ const PizzaMenu = () => {
     {
       id: 2,
       title: "Italian Spicy Pizza",
-      originalPrice: "$13.00",
-      discountedPrice: "$12.05",
+      originalPrice: "₹13.00",
+      discountedPrice: "₹12.05",
       description:
         "Moris elementum bibendum enim non sollicitudin. Cras mattis sem sol mi fuschosis losvest at lorem sem. Nordu convallis.",
       image: spicyPizza2,
@@ -27,8 +27,8 @@ const PizzaMenu = () => {
     {
       id: 3,
       title: "Italian Spicy Pizza",
-      originalPrice: "$10.00",
-      discountedPrice: "$12.00",
+      originalPrice: "₹10.00",
+      discountedPrice: "₹12.00",
       description:
         "Curabitur non ex losvest. Isenterent lectus ut, viverra enim. Aliquam finibus justo eget isolata commodo. Curabitur venenatis eget.",
       image: spicyPizza3,

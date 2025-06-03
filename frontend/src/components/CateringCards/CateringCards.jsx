@@ -20,7 +20,7 @@ const CateringCards = () => {
       subtitle: "American foods",
       location: "San Diego, CA",
       image: tastyBitesImg,
-      prices: ["$70/Day", "$400/Week", "$250/Month"],
+      prices: ["₹70/Day", "₹400/Week", "₹250/Month"],
       dimensions: ["4 meters", "2.5 meters"],
       features: ["Oven", "Freezer", "Tap/Sink", "Benches"],
     },
@@ -29,7 +29,7 @@ const CateringCards = () => {
       subtitle: "Spain foods",
       location: "Pinnacles National Park",
       image: savaAustinImg,
-      prices: ["$70/Day", "$400/Week", "$250/Month"],
+      prices: ["₹70/Day", "₹400/Week", "₹250/Month"],
       dimensions: ["4 meters", "2.5 meters"],
       features: ["Oven", "Freezer", "Tap/Sink", "Benches"],
     },
@@ -38,7 +38,7 @@ const CateringCards = () => {
       subtitle: "Spain foods",
       location: "San Diego, CA",
       image: covaSmartImg,
-      prices: ["$30/Day", "$400/Week", "$250/Month"],
+      prices: ["₹30/Day", "₹400/Week", "₹250/Month"],
       dimensions: ["4 meters", "2.5 meters"],
       features: ["Oven", "Freezer", "Tap/Sink", "Benches"],
     },
@@ -47,7 +47,7 @@ const CateringCards = () => {
       subtitle: "American foods",
       location: "San Diego, CA",
       image: tastyBitesImg,
-      prices: ["$70/Day", "$400/Week", "$250/Month"],
+      prices: ["₹70/Day", "₹400/Week", "₹250/Month"],
       dimensions: ["4 meters", "2.5 meters"],
       features: ["Oven", "Freezer", "Tap/Sink", "Benches"],
     },
@@ -56,7 +56,7 @@ const CateringCards = () => {
       subtitle: "Spain foods",
       location: "Pinnacles National Park",
       image: savaAustinImg,
-      prices: ["$70/Day", "$400/Week", "$250/Month"],
+      prices: ["₹70/Day", "₹400/Week", "₹250/Month"],
       dimensions: ["4 meters", "2.5 meters"],
       features: ["Oven", "Freezer", "Tap/Sink", "Benches"],
     },
@@ -65,7 +65,7 @@ const CateringCards = () => {
       subtitle: "Spain foods",
       location: "San Diego, CA",
       image: covaSmartImg,
-      prices: ["$30/Day", "$400/Week", "$250/Month"],
+      prices: ["₹30/Day", "₹400/Week", "₹250/Month"],
       dimensions: ["4 meters", "2.5 meters"],
       features: ["Oven", "Freezer", "Tap/Sink", "Benches"],
     },
@@ -83,9 +83,17 @@ const CateringCards = () => {
         {cardsData.map((card, index) => (
           <div className="catering-card" key={index}>
             <div className="card-image-wrapper">
-              <img src={card.image} alt={card.title} className="card-main-image" />
+              <img
+                src={card.image}
+                alt={card.title}
+                className="card-main-image"
+              />
               <div className="overlay-info">
-                <img src={locationIcon} alt="location" className="location-icon" />
+                <img
+                  src={locationIcon}
+                  alt="location"
+                  className="location-icon"
+                />
                 <span className="location-text">{card.location}</span>
               </div>
             </div>
@@ -115,12 +123,21 @@ const CateringCards = () => {
             <div className="card-features-grid">
               {card.features.map((feature, i) => (
                 <div className="feature-item" key={i}>
-                  <img src={featureIcons[i]} alt={feature} className="feature-icon" />
+                  <img
+                    src={featureIcons[i]}
+                    alt={feature}
+                    className="feature-icon"
+                  />
                   <span>{feature}</span>
                 </div>
               ))}
             </div>
-            <button className="view-more-btn" onClick={() => navigate("/restaurant")}>View More</button>
+            <button
+              className="view-more-btn"
+              onClick={() => navigate("/user-restaurant")}
+            >
+              View More
+            </button>
           </div>
         ))}
       </div>

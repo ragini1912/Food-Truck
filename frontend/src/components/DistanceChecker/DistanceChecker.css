@@ -99,3 +99,70 @@
 .check-button:hover {
   background-color: #f8f8f8;
 }
+
+@media (max-width: 600px) {
+  .distance-checker {
+    padding: 10px;
+    max-width: 98vw;
+    font-size: 14px;
+  }
+  .distance-label {
+    font-size: 20px;
+  }
+  .slider-container {
+    margin-top: 15px;
+    margin-bottom: 30px;
+  }
+  .slider-value {
+    font-size: 12px;
+    top: -20px;
+    left: calc(50% - 12px);
+    padding: 1px 6px;
+  }
+  .check-button {
+    font-size: 16px;
+    padding: 10px 0;
+  }
+}
+
+@media (min-width: 601px) and (max-width: 900px) {
+  .distance-checker {
+    padding: 16px;
+    max-width: 400px;
+    font-size: 16px;
+  }
+  .distance-label {
+    font-size: 26px;
+  }
+  .slider-value {
+    font-size: 13px;
+    top: -22px;
+    left: calc(50% - 13px);
+    padding: 2px 7px;
+  }
+  .check-button {
+    font-size: 18px;
+    padding: 11px 0;
+  }
+}
+
+@media (min-width: 901px) {
+  .distance-checker {
+    padding: 24px;
+    max-width: 420px;
+    font-size: 18px;
+  }
+  .distance-label {
+    font-size: 30px;
+  }
+  .slider-value {
+    font-size: 14px;
+    top: -25px;
+    left: calc(50% - 15px);
+    padding: 2px 8px;
+  }
+  .check-button {
+    font-size: 20px;
+    padding: 12px 0;
+  }
+}
