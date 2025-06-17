@@ -8,14 +8,14 @@ import {
   MapPin,
   Clock,
   Phone,
-  Menu,
   X,
-  Filter,
   BookOpen,
 } from "lucide-react";
 import UserNavbar from "../Navbar/UserNavbar";
+import { useNavigate } from "react-router-dom";
 
 const UserRestaurantPage = () => {
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("order");
   const [cartItems, setCartItems] = useState([
     {
@@ -24,6 +24,8 @@ const UserRestaurantPage = () => {
       category: "Hot Nacho Chips",
       price: 20,
       quantity: 1,
+      image:
+        "https://images.unsplash.com/photo-1513104890138-7c749659a591?w=400&h=300&fit=crop",
     },
     {
       id: 2,
@@ -31,6 +33,8 @@ const UserRestaurantPage = () => {
       category: "Smoked Biscuit",
       price: 40,
       quantity: 2,
+      image:
+        "https://images.unsplash.com/photo-1509722747041-616f39b57569?w=400&h=300&fit=crop",
     },
     {
       id: 3,
@@ -38,6 +42,8 @@ const UserRestaurantPage = () => {
       category: "Vegetables",
       price: 50,
       quantity: 3,
+      image:
+        "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=400&h=300&fit=crop",
     },
   ]);
   const [searchTerm, setSearchTerm] = useState("");
@@ -221,9 +227,14 @@ const UserRestaurantPage = () => {
           category: menuItem.category,
           price: menuItem.price,
           quantity: 1,
+          image: menuItem.image,
         },
       ]);
     }
+  };
+
+  const handleCheckout = () => {
+    navigate("/cart");
   };
 
   const filteredItems = menuItems.filter((item) => {
@@ -255,133 +266,117 @@ const UserRestaurantPage = () => {
     ));
   };
 
-  // Mobile Category Menu Component
-  const MobileCategoryMenu = () => (
-    <div
-      className={`lg:hidden fixed inset-0 bg-black bg-opacity-50 z-50 transition-opacity duration-300 ${
-        isMobileMenuOpen ? "opacity-100" : "opacity-0 pointer-events-none"
-      }`}
-    >
-      <div className="flex items-center justify-center min-h-screen px-4">
-        <div
-          className={`bg-white w-full max-w-md rounded-xl shadow-2xl transition-all duration-300 transform ${
-            isMobileMenuOpen ? "scale-100 opacity-100" : "scale-95 opacity-0"
-          }`}
-        >
-          <div className="p-4 border-b">
-            <div className="flex items-center justify-between">
-              <h3 className="text-lg font-semibold">Menu Categories</h3>
-              <button onClick={() => setIsMobileMenuOpen(false)}>
-                <X className="w-6 h-6" />
-              </button>
-            </div>
-          </div>
-          <div className="p-4 space-y-2 max-h-[60vh] overflow-y-auto">
-            {categories.map((category) => (
-              <button
-                key={category.id}
-                onClick={() => {
-                  setSelectedCategory(category.id);
-                  setIsMobileMenuOpen(false);
-                }}
-                className={`w-full text-left px-4 py-3 rounded-lg transition-colors ${
-                  selectedCategory === category.id
-                    ? "bg-orange-100 text-orange-600 font-medium"
-                    : "hover:bg-gray-100"
-                }`}
-              >
-                <div className="flex justify-between items-center">
-                  <span>{category.name}</span>
-                  <span className="text-sm text-gray-500">
-                    {category.count}
-                  </span>
-                </div>
-              </button>
-            ))}
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-
   // Mobile Cart Component
   const MobileCart = () => (
     <div
-      className={`lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t shadow-2xl z-40 transition-transform duration-300 transform ${
-        isMobileCartOpen ? "translate-y-0" : "translate-y-full"
+      className={`lg:hidden fixed inset-0 z-40 transition-opacity duration-300 ${
+        isMobileCartOpen ? "opacity-100" : "opacity-0 pointer-events-none"
       }`}
     >
-      <div className="p-4 border-b">
-        <div className="flex items-center justify-between">
-          <h3 className="text-lg font-semibold">Cart Items</h3>
-          <button onClick={() => setIsMobileCartOpen(false)}>
-            <X className="w-6 h-6" />
+      {/* Overlay */}
+      <div
+        className="absolute inset-0 bg-black bg-opacity-50"
+        onClick={() => setIsMobileCartOpen(false)}
+      />
+      {/* Cart Content */}
+      <div
+        className={`absolute bottom-0 left-0 right-0 bg-white border-t shadow-2xl transition-transform duration-300 transform ${
+          isMobileCartOpen ? "translate-y-0" : "translate-y-full"
+        }`}
+        onClick={(e) => e.stopPropagation()} // Prevent clicks inside the cart from closing it
+      >
+        <div className="p-4 border-b">
+          <div className="flex items-center justify-between">
+            <h3 className="text-lg font-semibold">Cart Items</h3>
+            <button onClick={() => setIsMobileCartOpen(false)}>
+              <X className="w-6 h-6" />
+            </button>
+          </div>
+        </div>
+        <div className="max-h-96 overflow-y-auto">
+          <div className="p-4 space-y-4">
+            {cartItems.map((item) => (
+              <div
+                key={item.id}
+                className="border-b border-gray-100 pb-4 flex items-start gap-3"
+              >
+                {/* Image with responsive size */}
+                <div className="w-10 h-10 md:w-12 md:h-12 lg:w-10 lg:h-10 flex-shrink-0">
+                  <img
+                    src={item.image}
+                    alt={item.name}
+                    className="w-full h-full object-cover rounded-md"
+                  />
+                </div>
+                <div className="flex-1">
+                  <div className="flex justify-between items-start mb-2">
+                    <div className="flex-1">
+                      <h4 className="font-semibold text-gray-800 text-sm leading-tight">
+                        {item.name}
+                      </h4>
+                      <p className="text-xs text-gray-500 mt-1">
+                        {item.category}
+                      </p>
+                    </div>
+                    <span className="font-bold text-gray-800">
+                      ₹{item.price}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-gray-600">
+                      Serve {item.quantity}
+                    </span>
+                    <div className="flex items-center gap-3">
+                      <button
+                        onClick={() => updateQuantity(item.id, -1)}
+                        className="w-8 h-8 rounded-full border border-gray-300 flex items-center justify-center hover:bg-gray-100"
+                      >
+                        <Minus className="w-4 h-4" />
+                      </button>
+                      <span className="font-semibold w-6 text-center">
+                        {item.quantity}
+                      </span>
+                      <button
+                        onClick={() => updateQuantity(item.id, 1)}
+                        className="w-8 h-8 rounded-full border border-gray-300 flex items-center justify-center hover:bg-gray-100"
+                      >
+                        <Plus className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+        <div className="p-4 border-t bg-gray-50">
+          <div className="space-y-2 mb-4">
+            <div className="flex justify-between text-sm">
+              <span>Sub Total</span>
+              <span>₹{subtotal}</span>
+            </div>
+            <div className="flex justify-between text-sm">
+              <span>Delivery Charge (2 kms)</span>
+              <span className="text-green-600 font-semibold">Free</span>
+            </div>
+            <div className="flex justify-between text-sm">
+              <span>Discount (10%)</span>
+              <span className="text-green-600">-₹{discount}</span>
+            </div>
+            <div className="border-t pt-2">
+              <div className="flex justify-between font-bold">
+                <span>To Pay</span>
+                <span>₹{total}</span>
+              </div>
+            </div>
+          </div>
+          <button
+            onClick={handleCheckout}
+            className="w-full bg-gradient-to-r from-orange-500 to-orange-600 text-white py-3 rounded-xl font-semibold"
+          >
+            Proceed to Checkout
           </button>
         </div>
-      </div>
-      <div className="max-h-96 overflow-y-auto">
-        <div className="p-4 space-y-4">
-          {cartItems.map((item) => (
-            <div key={item.id} className="border-b border-gray-100 pb-4">
-              <div className="flex justify-between items-start mb-2">
-                <div className="flex-1">
-                  <h4 className="font-semibold text-gray-800 text-sm leading-tight">
-                    {item.name}
-                  </h4>
-                  <p className="text-xs text-gray-500 mt-1">{item.category}</p>
-                </div>
-                <span className="font-bold text-gray-800">₹{item.price}</span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-600">
-                  Serve {item.quantity}
-                </span>
-                <div className="flex items-center gap-3">
-                  <button
-                    onClick={() => updateQuantity(item.id, -1)}
-                    className="w-8 h-8 rounded-full border border-gray-300 flex items-center justify-center hover:bg-gray-100"
-                  >
-                    <Minus className="w-4 h-4" />
-                  </button>
-                  <span className="font-semibold w-6 text-center">
-                    {item.quantity}
-                  </span>
-                  <button
-                    onClick={() => updateQuantity(item.id, 1)}
-                    className="w-8 h-8 rounded-full border border-gray-300 flex items-center justify-center hover:bg-gray-100"
-                  >
-                    <Plus className="w-4 h-4" />
-                  </button>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-      <div className="p-4 border-t bg-gray-50">
-        <div className="space-y-2 mb-4">
-          <div className="flex justify-between text-sm">
-            <span>Sub Total</span>
-            <span>₹{subtotal}</span>
-          </div>
-          <div className="flex justify-between text-sm">
-            <span>Delivery Charge (2 kms)</span>
-            <span className="text-green-600 font-semibold">Free</span>
-          </div>
-          <div className="flex justify-between text-sm">
-            <span>Discount (10%)</span>
-            <span className="text-green-600">-₹{discount}</span>
-          </div>
-          <div className="border-t pt-2">
-            <div className="flex justify-between font-bold">
-              <span>To Pay</span>
-              <span>₹{total}</span>
-            </div>
-          </div>
-        </div>
-        <button className="w-full bg-gradient-to-r from-orange-500 to-orange-600 text-white py-3 rounded-xl font-semibold">
-          Proceed to Checkout
-        </button>
       </div>
     </div>
   );
@@ -556,36 +551,51 @@ const UserRestaurantPage = () => {
 
           <div className="space-y-4 mb-6">
             {cartItems.map((item) => (
-              <div key={item.id} className="border-b border-gray-100 pb-4">
-                <div className="flex justify-between items-start mb-2">
-                  <div className="flex-1">
-                    <h4 className="font-semibold text-gray-800 text-sm leading-tight">
-                      {item.name}
-                    </h4>
-                    <p className="text-xs text-gray-500 mt-1">
-                      {item.category}
-                    </p>
-                  </div>
-                  <span className="font-bold text-gray-800">₹{item.price}</span>
+              <div
+                key={item.id}
+                className="border-b border-gray-100 pb-4 flex items-start gap-3"
+              >
+                {/* Image with responsive size */}
+                <div className="w-10 h-10 md:w-12 md:h-12 lg:w-10 lg:h-10 flex-shrink-0">
+                  <img
+                    src={item.image}
+                    alt={item.name}
+                    className="w-full h-full object-cover rounded-md"
+                  />
                 </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-600">
-                    Serve {item.quantity}
-                  </span>
-                  <div className="flex items-center gap-3">
-                    <button
-                      onClick={() => updateQuantity(item.id, -1)}
-                      className="w-6 h-6 rounded-full border border-gray-300 flex items-center justify-center hover:bg-gray-100"
-                    >
-                      <Minus className="w-3 h-3" />
-                    </button>
-                    <span className="font-semibold">{item.quantity}</span>
-                    <button
-                      onClick={() => updateQuantity(item.id, 1)}
-                      className="w-6 h-6 rounded-full border border-gray-300 flex items-center justify-center hover:bg-gray-100"
-                    >
-                      <Plus className="w-3 h-3" />
-                    </button>
+                <div className="flex-1">
+                  <div className="flex justify-between items-start mb-2">
+                    <div className="flex-1">
+                      <h4 className="font-semibold text-gray-800 text-sm leading-tight">
+                        {item.name}
+                      </h4>
+                      <p className="text-xs text-gray-500 mt-1">
+                        {item.category}
+                      </p>
+                    </div>
+                    <span className="font-bold text-gray-800">
+                      ₹{item.price}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-gray-600">
+                      Serve {item.quantity}
+                    </span>
+                    <div className="flex items-center gap-3">
+                      <button
+                        onClick={() => updateQuantity(item.id, -1)}
+                        className="w-6 h-6 rounded-full border border-gray-300 flex items-center justify-center hover:bg-gray-100"
+                      >
+                        <Minus className="w-3 h-3" />
+                      </button>
+                      <span className="font-semibold">{item.quantity}</span>
+                      <button
+                        onClick={() => updateQuantity(item.id, 1)}
+                        className="w-6 h-6 rounded-full border border-gray-300 flex items-center justify-center hover:bg-gray-100"
+                      >
+                        <Plus className="w-3 h-3" />
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -613,7 +623,10 @@ const UserRestaurantPage = () => {
             </div>
           </div>
 
-          <button className="w-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white py-3 rounded-xl font-semibold transition-all duration-200 transform hover:scale-105 hover:shadow-lg">
+          <button
+            onClick={handleCheckout}
+            className="w-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white py-3 rounded-xl font-semibold transition-all duration-200 transform hover:scale-105 hover:shadow-lg"
+          >
             Proceed to Checkout
           </button>
         </div>
@@ -743,6 +756,10 @@ const UserRestaurantPage = () => {
     { id: "reviews", label: "Reviews", component: renderReviews },
   ];
 
+  const handleCloseMobileMenu = () => {
+    setIsMobileMenuOpen(false);
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 to-yellow-50">
       <UserNavbar />
@@ -839,12 +856,19 @@ const UserRestaurantPage = () => {
         </div>
       )}
 
+      {/* Mobile Menu Modal */}
       <div
         className={`lg:hidden fixed inset-0 bg-black bg-opacity-50 z-50 transition-opacity duration-300 ${
           isMobileMenuOpen ? "opacity-100" : "opacity-0 pointer-events-none"
         }`}
+        onClick={handleCloseMobileMenu}
+        onTouchStart={handleCloseMobileMenu} // Added for mobile touch support
       >
-        <div className="flex items-center justify-center min-h-screen px-4">
+        <div
+          className="flex items-center justify-center min-h-screen px-4"
+          onClick={(e) => e.stopPropagation()}
+          onTouchStart={(e) => e.stopPropagation()} // Prevent touch events inside the modal from closing it
+        >
           <div
             className={`bg-white w-full max-w-md rounded-xl shadow-2xl transition-all duration-300 transform ${
               isMobileMenuOpen ? "scale-100 opacity-100" : "scale-95 opacity-0"
@@ -853,7 +877,7 @@ const UserRestaurantPage = () => {
             <div className="p-4 border-b">
               <div className="flex items-center justify-between">
                 <h3 className="text-lg font-semibold">Menu Categories</h3>
-                <button onClick={() => setIsMobileMenuOpen(false)}>
+                <button onClick={handleCloseMobileMenu}>
                   <X className="w-6 h-6" />
                 </button>
               </div>

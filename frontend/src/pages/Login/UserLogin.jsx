@@ -100,6 +100,12 @@ const UserLogin = () => {
     }
   };
 
+  const handlePhoneKeyDown = (e) => {
+    if (e.key === "Enter" && !isLoading) {
+      handleSendOtp();
+    }
+  };
+
   const handleOtpChange = (index, value) => {
     // Only allow digits
     if (!/^\d*$/.test(value)) return;
@@ -130,6 +136,10 @@ const UserLogin = () => {
     // Handle backspace
     if (e.key === "Backspace" && !formData.otp[index] && index > 0) {
       otpRefs.current[index - 1]?.focus();
+    }
+    // Handle Enter key
+    if (e.key === "Enter" && !isLoading && formData.otp.join("").length === 6) {
+      handleVerifyOtp();
     }
   };
 
@@ -346,6 +356,7 @@ const UserLogin = () => {
                       type="tel"
                       value={formData.phone}
                       onChange={handlePhoneChange}
+                      onKeyDown={handlePhoneKeyDown}
                       placeholder="Enter phone number"
                       className={`w-full pl-16 pr-4 py-4 bg-gray-50 border-2 rounded-xl focus:outline-none focus:bg-white transition-all duration-300 ${
                         errors.phone

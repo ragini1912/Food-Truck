@@ -1053,7 +1053,7 @@ const RestaurantDashboard = () => {
                               darkMode ? "bg-gray-700" : "bg-gray-50"
                             } ${
                               !notif.read
-                                ? "bg-blue-50 dark:bg-blue-900 bg-opacity-30"
+                                ? "bg-blue-50 bg-purple-300 bg-opacity-30"
                                 : ""
                             } flex justify-between items-center`}
                           >
@@ -1471,9 +1471,9 @@ const RestaurantDashboard = () => {
                     </div>
                   </div>
 
-                  <div className="mt-6 p-4 bg-gradient-to-r from-orange-50 to-red-50 dark:from-orange-900 dark:to-red-900 rounded-lg">
+                  <div className="mt-6 p-4 bg-gradient-to-r from-blue-100 to-purple-100 dark:from-blue-500 dark:to-purple-500 rounded-lg">
                     <div className="flex items-center space-x-2 mb-2">
-                      <Zap className="w-5 h-5 text-orange-500" />
+                      <Zap className="w-5 h-5 text-blue-900" />
                       <span
                         className={`font-semibold ${
                           darkMode ? "text-white" : "text-gray-900"
@@ -1484,7 +1484,7 @@ const RestaurantDashboard = () => {
                     </div>
                     <ul
                       className={`text-sm space-y-1 ${
-                        darkMode ? "text-gray-300" : "text-gray-600"
+                        darkMode ? "text-gray-300" : "text-gray-100"
                       }`}
                     >
                       <li>• Peak order time: 7:30 PM</li>

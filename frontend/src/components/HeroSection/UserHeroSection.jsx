@@ -1,12 +1,11 @@
 import React, { useState } from "react";
-import { MapPin, Star, Clock, Phone, Search, Menu, X } from "lucide-react";
+import { MapPin, Star, Clock, Phone, Search, X } from "lucide-react";
 import DistanceChecker from "../DistanceChecker/DistanceChecker";
 
 const UserHeroSection = () => {
   const [selectedDistance, setSelectedDistance] = useState(10);
   const [selectedTruck, setSelectedTruck] = useState(null);
   const [viewMode, setViewMode] = useState("map");
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
 
   // Mock food truck data
@@ -267,15 +266,21 @@ const UserHeroSection = () => {
       {/* Hero Section */}
       <HeroSection />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
-          <div className="flex items-center space-x-3">
-            {/* <div className="text-2xl">🚚</div>
-            <span className="text-xl font-bold text-gray-800">
-              FoodTruck Finder
-            </span> */}
+        {/* Header for desktop */}
+        <div className="hidden lg:flex justify-between items-center h-16 gap-4">
+          <div className="flex-grow">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+              <input
+                type="text"
+                placeholder="Search by name or cuisine..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+              />
+            </div>
           </div>
-
-          <div className="hidden md:flex items-center space-x-6">
+          <div className="flex items-center space-x-6 flex-shrink-0">
             <button
               onClick={() => setViewMode("map")}
               className={`px-4 py-2 rounded-lg font-medium transition-all ${
@@ -297,53 +302,9 @@ const UserHeroSection = () => {
               List View
             </button>
           </div>
-
-          <button
-            onClick={() => setIsMenuOpen(!isMenuOpen)}
-            className="md:hidden p-2 rounded-lg hover:bg-gray-100"
-          >
-            {isMenuOpen ? (
-              <X className="w-6 h-6" />
-            ) : (
-              <Menu className="w-6 h-6" />
-            )}
-          </button>
         </div>
       </div>
 
-      {/* Mobile menu */}
-      {isMenuOpen && (
-        <div className="md:hidden bg-white border-t border-gray-200 px-4 py-3">
-          <div className="space-y-2">
-            <button
-              onClick={() => {
-                setViewMode("map");
-                setIsMenuOpen(false);
-              }}
-              className={`w-full text-left px-4 py-2 rounded-lg font-medium transition-all ${
-                viewMode === "map"
-                  ? "bg-orange-100 text-orange-700"
-                  : "text-gray-600"
-              }`}
-            >
-              Map View
-            </button>
-            <button
-              onClick={() => {
-                setViewMode("list");
-                setIsMenuOpen(false);
-              }}
-              className={`w-full text-left px-4 py-2 rounded-lg font-medium transition-all ${
-                viewMode === "list"
-                  ? "bg-orange-100 text-orange-700"
-                  : "text-gray-600"
-              }`}
-            >
-              List View
-            </button>
-          </div>
-        </div>
-      )}
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
@@ -354,11 +315,8 @@ const UserHeroSection = () => {
                 selectedDistance={selectedDistance}
                 setSelectedDistance={setSelectedDistance}
               />
-              {/* Search */}
-              <div className="bg-white p-6 rounded-2xl shadow-lg">
-                <h3 className="text-lg font-bold text-gray-800 mb-4">
-                  Search Trucks
-                </h3>
+              {/* Search and buttons for mobile/tablet */}
+              <div className="lg:hidden space-y-4">
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
                   <input
@@ -368,6 +326,28 @@ const UserHeroSection = () => {
                     onChange={(e) => setSearchQuery(e.target.value)}
                     className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                   />
+                </div>
+                <div className="flex gap-4">
+                  <button
+                    onClick={() => setViewMode("map")}
+                    className={`sm:w-1/2 px-4 py-2 rounded-lg font-medium transition-all ${
+                      viewMode === "map"
+                        ? "bg-orange-100 text-orange-700"
+                        : "text-gray-600 hover:text-orange-600"
+                    }`}
+                  >
+                    Map View
+                  </button>
+                  <button
+                    onClick={() => setViewMode("list")}
+                    className={`sm:w-1/2 px-4 py-2 rounded-lg font-medium transition-all ${
+                      viewMode === "list"
+                        ? "bg-orange-100 text-orange-700"
+                        : "text-gray-600 hover:text-orange-600"
+                    }`}
+                  >
+                    List View
+                  </button>
                 </div>
               </div>
             </div>
@@ -390,7 +370,7 @@ const UserHeroSection = () => {
                   </div>
                 </div>
 
-                <div className="relative h-96 lg:h-[600px] bg-gradient-to-br from-green-100 to-blue-100 overflow-hidden">
+                <div className="relative h-72 lg:h-[400px] bg-gradient-to-br from-green-100 to-blue-100 overflow-hidden">
                   {/* Mock map background */}
                   <div className="absolute inset-0 opacity-20">
                     <svg className="w-full h-full" viewBox="0 0 800 600">

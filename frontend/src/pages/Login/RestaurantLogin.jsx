@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { Phone, ArrowRight, Check, Lock, Utensils, Star } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import RestaurantNavbar from "../../components/Navbar/RestaurantNavbar";
+
 // Toast Component
 const Toast = ({ message, onClose }) => {
   useEffect(() => {
@@ -45,7 +46,7 @@ export default function RestaurantLogin() {
     if (isLoggedIn) {
       setShowToast(true);
       const timer = setTimeout(() => {
-        navigate("/");
+        navigate("/restaurant"); // Redirect to restaurant home page
       }, 2000);
       return () => clearTimeout(timer);
     }
@@ -66,6 +67,12 @@ export default function RestaurantLogin() {
     if (errors.phone) setErrors((prev) => ({ ...prev, phone: "" }));
   };
 
+  const handlePhoneKeyDown = (e) => {
+    if (e.key === "Enter" && !isLoading) {
+      handlePhoneSubmit(e);
+    }
+  };
+
   const handlePhoneSubmit = async (e) => {
     e.preventDefault();
     const phoneError = validatePhone(phoneNumber);
@@ -80,6 +87,10 @@ export default function RestaurantLogin() {
       setStep("otp");
       setTimer(30);
       setCanResend(false);
+      // Focus first OTP input
+      setTimeout(() => {
+        otpRefs.current[0]?.focus();
+      }, 100);
     }, 1500);
   };
 
@@ -97,6 +108,9 @@ export default function RestaurantLogin() {
   const handleOtpKeyDown = (index, e) => {
     if (e.key === "Backspace" && !otp[index] && index > 0) {
       otpRefs.current[index - 1]?.focus();
+    }
+    if (e.key === "Enter" && !isLoading && otp.join("").length === 6) {
+      handleOtpSubmit(e);
     }
   };
 
@@ -131,6 +145,42 @@ export default function RestaurantLogin() {
     setCanResend(false);
     setErrors({});
   };
+
+  if (isLoggedIn) {
+    return (
+      <>
+        <RestaurantNavbar />
+        <div className="min-h-screen bg-gradient-to-br from-orange-50 via-red-50 to-pink-50 flex items-center justify-center p-4 relative overflow-hidden">
+          {showToast && (
+            <Toast
+              message="Login successful! Welcome to our restaurant."
+              onClose={() => setShowToast(false)}
+            />
+          )}
+          <div className="bg-white/80 backdrop-blur-xl rounded-3xl p-8 w-full max-w-md text-center border border-white/20 shadow-2xl">
+            <div className="w-20 h-20 bg-gradient-to-r from-orange-500 to-red-500 rounded-full flex items-center justify-center mx-auto mb-6 animate-pulse">
+              <Check className="w-10 h-10 text-white" />
+            </div>
+            <h2 className="text-3xl font-bold bg-gradient-to-r from-orange-600 to-red-600 bg-clip-text text-transparent mb-4">
+              Welcome Back!
+            </h2>
+            <p className="text-gray-600 mb-2">
+              You have successfully logged in.
+            </p>
+            <p className="text-gray-500 text-sm mb-8">
+              Phone: +91 {phoneNumber}
+            </p>
+            <div className="flex items-center justify-center">
+              <div className="w-8 h-8 border-4 border-orange-500 border-t-transparent rounded-full animate-spin mr-3"></div>
+              <p className="text-gray-700 font-medium">
+                Redirecting to restaurant page...
+              </p>
+            </div>
+          </div>
+        </div>
+      </>
+    );
+  }
 
   return (
     <>
@@ -233,11 +283,8 @@ export default function RestaurantLogin() {
                     <input
                       type="tel"
                       value={phoneNumber}
-                      onChange={(e) =>
-                        setPhoneNumber(
-                          e.target.value.replace(/\D/g, "").slice(0, 10)
-                        )
-                      }
+                      onChange={handlePhoneChange}
+                      onKeyDown={handlePhoneKeyDown}
                       className={`w-full pl-14 pr-4 py-4 bg-gray-50 border-2 rounded-2xl text-lg font-medium transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-orange-100 ${
                         errors.phone
                           ? "border-red-300 focus:border-red-500"
@@ -293,28 +340,27 @@ export default function RestaurantLogin() {
                     <label className="block text-sm font-semibold text-gray-700 mb-3 text-center">
                       Enter 6-digit OTP
                     </label>
-                    {/* Replace all OTP inputs with the following: */}
-                    {/*
-              <div className="flex justify-center space-x-2 sm:space-x-3">
-                {otp.map((digit, index) => (
-                  <input
-                    key={index}
-                    ref={el => otpRefs.current[index] = el}
-                    id={`otp-${index}`}
-                    type="text"
-                    value={digit}
-                    onChange={e => handleOtpChange(index, e.target.value)}
-                    onKeyDown={e => handleOtpKeyDown(index, e)}
-                    className="w-12 h-12 sm:w-14 sm:h-14 text-center text-xl font-bold bg-gray-50 border-2 rounded-xl transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-orange-100 ${
-                      errors.otp
-                        ? "border-red-300 focus:border-red-500"
-                        : "border-gray-200 focus:border-orange-500"
-                    }`}
-                    maxLength="1"
-                  />
-                ))}
-              </div>
-              */}
+                    <div className="flex justify-between mb-2">
+                      {otp.map((digit, index) => (
+                        <input
+                          key={index}
+                          ref={(el) => (otpRefs.current[index] = el)}
+                          type="text"
+                          inputMode="numeric"
+                          value={digit}
+                          onChange={(e) =>
+                            handleOtpChange(index, e.target.value)
+                          }
+                          onKeyDown={(e) => handleOtpKeyDown(index, e)}
+                          className={`w-12 h-14 text-center text-xl font-bold bg-gray-50 border-2 rounded-lg focus:outline-none focus:bg-white transition-all duration-300 ${
+                            errors.otp
+                              ? "border-red-300 focus:border-red-500"
+                              : "border-orange-200 focus:border-orange-500 focus:scale-110"
+                          }`}
+                          maxLength="1"
+                        />
+                      ))}
+                    </div>
                     {errors.otp && (
                       <p className="mt-3 text-sm text-red-600 text-center flex items-center justify-center">
                         <span className="w-1 h-1 bg-red-600 rounded-full mr-2"></span>
@@ -344,7 +390,7 @@ export default function RestaurantLogin() {
                   </div>
 
                   <button
-                    type="submit"
+                    onClick={handleOtpSubmit}
                     disabled={isLoading}
                     className="w-full bg-gradient-to-r from-orange-500 to-red-600 text-white py-4 rounded-2xl font-semibold text-lg shadow-xl hover:shadow-2xl transform hover:scale-[1.02] transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center space-x-2"
                   >

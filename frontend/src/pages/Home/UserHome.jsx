@@ -5,9 +5,9 @@ import HeroSection from "../../components/HeroSection/UserHeroSection";
 import CateringCards from "../../components/CateringCards/CateringCards";
 import FoodCategories from "../../components/FoodCategories/FoodCategories";
 import CateringCuisines from "../../components/CateringCuisines/CateringCuisines";
-import PizzaMenu from "../../components/PizzaMenu/PizzaMenu";
+import PizzaMenu from "../../components/Menu/UserMenu";
 import CustomerTestimonials from "../../components/CustomerTestimonials/CustomerTestimonials";
-import Footer from "../../components/Footer/Footer";
+import Footer from "../../components/Footer/UserFooter";
 import AboutUs from "../AboutUs/AboutUs";
 
 const UserHome = () => {

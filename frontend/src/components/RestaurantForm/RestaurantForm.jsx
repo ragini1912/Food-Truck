@@ -1,728 +1,1293 @@
-import React, { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import React, { useState, useEffect, useRef, useContext } from "react";
 import {
   ChefHat,
   MapPin,
+  Clock,
   Phone,
   Mail,
-  Clock,
-  Users,
   Star,
-  Upload,
-  Camera,
-  Check,
+  CreditCard,
+  Wifi,
+  Car,
+  Thermometer,
+  CheckCircle,
   AlertCircle,
-  ArrowRight,
 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { RestaurantContext } from "../../context/RestaurantContext";
+import { Loader } from "@googlemaps/js-api-loader";
+import RestaurantNavbar from "../../components/Navbar/RestaurantNavbar";
 
 const RestaurantForm = () => {
-  const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState({
-    // Basic Information
-    restaurantName: "",
-    ownerName: "",
-    email: "",
-    phone: "",
-
-    // Location Details
+    name: "",
+    description: "",
+    restaurant_type: "restaurant",
+    category: "",
+    food_categories: "",
+    cuisine_types: [],
     address: "",
     city: "",
     state: "",
     pincode: "",
-
-    // Restaurant Details
-    cuisineType: "",
-    restaurantType: "",
-    seatingCapacity: "",
-
-    // Business Information
-    gstNumber: "",
-    fssaiLicense: "",
-    establishedYear: "",
-
-    // Operating Hours
-    openingTime: "",
-    closingTime: "",
-    workingDays: [],
-
-    // Additional Details
-    specialities: "",
-    description: "",
-    averagePrice: "",
-
-    // Documents
-    restaurantImages: [],
-    menuImages: [],
-    licenseDocuments: [],
+    latitude: "",
+    longitude: "",
+    phone: "",
+    email: "",
+    delivery_available: true,
+    delivery_type: "platform",
+    pickup_available: true,
+    delivery_radius: 5,
+    min_delivery_time: 30,
+    max_delivery_time: 60,
+    min_order_amount: 0.0,
+    delivery_fee: 0.0,
+    packaging_fee: 0.0,
+    opening_time: "",
+    closing_time: "",
+    is_24_hours: false,
+    weekly_off: [],
+    gst_number: "",
+    fssai_license: "",
+    business_license: "",
+    status: "active",
+    is_verified: false,
+    is_featured: false,
+    is_promoted: false,
+    accepts_cash: true,
+    accepts_card: true,
+    accepts_upi: true,
+    has_parking: false,
+    has_wifi: false,
+    has_ac: false,
   });
-
+  const { setRestaurantData } = useContext(RestaurantContext);
+  const navigate = useNavigate();
   const [errors, setErrors] = useState({});
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [currentStep, setCurrentStep] = useState(1);
+  const [isRegistered, setIsRegistered] = useState(false);
+  const [showMap, setShowMap] = useState(false);
+  const [map, setMap] = useState(null);
+  const [marker, setMarker] = useState(null);
+  const mapRef = useRef(null);
+  const [isMapLoaded, setIsMapLoaded] = useState(false);
 
-  const cuisineOptions = [
-    "North Indian",
-    "South Indian",
-    "Chinese",
-    "Italian",
-    "Continental",
-    "Mexican",
-    "Thai",
-    "Japanese",
-    "Mediterranean",
-    "Fast Food",
-    "Street Food",
-    "Bakery",
-    "Desserts",
-    "Multi-Cuisine",
-  ];
+  useEffect(() => {
+    console.log("currentStep changed:", currentStep);
+    console.log("isRegistered:", isRegistered);
+  }, [currentStep, isRegistered]);
+
+  // Load Google Maps API
+  useEffect(() => {
+    const loader = new Loader({
+      apiKey: process.env.REACT_APP_GOOGLE_API_KEY,
+      version: "weekly",
+      libraries: ["places"],
+    });
+
+    loader
+      .load()
+      .then(() => {
+        setIsMapLoaded(true);
+      })
+      .catch((e) => {
+        console.error("Failed to load Google Maps API:", e);
+      });
+  }, []);
+
+  // Initialize map when showing
+  useEffect(() => {
+    if (showMap && isMapLoaded && window.google && mapRef.current && !map) {
+      initializeMap();
+    }
+  }, [showMap, isMapLoaded]);
+
+  const initializeMap = () => {
+    const defaultCenter = { lat: 28.6139, lng: 77.209 }; // Delhi default
+    const currentCenter =
+      formData.latitude && formData.longitude
+        ? {
+            lat: parseFloat(formData.latitude),
+            lng: parseFloat(formData.longitude),
+          }
+        : defaultCenter;
+
+    const mapInstance = new window.google.maps.Map(mapRef.current, {
+      zoom: 15,
+      center: currentCenter,
+      mapTypeControl: false,
+      streetViewControl: false,
+      fullscreenControl: false,
+    });
+
+    const markerInstance = new window.google.maps.Marker({
+      position: currentCenter,
+      map: mapInstance,
+      draggable: true,
+      title: "Restaurant Location",
+    });
+
+    mapInstance.addListener("click", (event) => {
+      const lat = event.latLng.lat();
+      const lng = event.latLng.lng();
+      markerInstance.setPosition(event.latLng);
+      updateLocationFromMap(lat, lng);
+      reverseGeocode(lat, lng);
+    });
+
+    markerInstance.addListener("dragend", (event) => {
+      const lat = event.latLng.lat();
+      const lng = event.latLng.lng();
+      updateLocationFromMap(lat, lng);
+      reverseGeocode(lat, lng);
+    });
+
+    setMap(mapInstance);
+    setMarker(markerInstance);
+  };
+
+  const updateLocationFromMap = (lat, lng) => {
+    setFormData((prev) => ({
+      ...prev,
+      latitude: lat.toFixed(6),
+      longitude: lng.toFixed(6),
+    }));
+  };
+
+  const reverseGeocode = (lat, lng) => {
+    const geocoder = new window.google.maps.Geocoder();
+    geocoder.geocode({ location: { lat, lng } }, (results, status) => {
+      if (status === "OK" && results[0]) {
+        const addressComponents = results[0].address_components;
+        const formattedAddress = results[0].formatted_address;
+
+        let city = "",
+          state = "",
+          pincode = "";
+
+        addressComponents.forEach((component) => {
+          const types = component.types;
+          if (
+            types.includes("locality") ||
+            types.includes("administrative_area_level_2")
+          ) {
+            city = component.long_name;
+          }
+          if (types.includes("administrative_area_level_1")) {
+            state = component.long_name;
+          }
+          if (types.includes("postal_code")) {
+            pincode = component.long_name;
+          }
+        });
+
+        setFormData((prev) => ({
+          ...prev,
+          address: formattedAddress,
+          city: city || prev.city,
+          state: state || prev.state,
+          pincode: pincode || prev.pincode,
+        }));
+      }
+    });
+  };
 
   const restaurantTypes = [
-    "Fine Dining",
-    "Casual Dining",
-    "Quick Service",
-    "Food Truck",
-    "Cafe",
-    "Bar & Grill",
-    "Buffet",
-    "Cloud Kitchen",
+    { value: "movable", label: "Movable (Food Truck/Cart)" },
+    { value: "non_movable", label: "Non-Movable (Fixed Location)" },
+    { value: "restaurant", label: "Traditional Restaurant" },
   ];
 
-  const workingDaysOptions = [
-    "Monday",
-    "Tuesday",
-    "Wednesday",
-    "Thursday",
-    "Friday",
-    "Saturday",
-    "Sunday",
+  const statusChoices = [
+    { value: "active", label: "Active" },
+    { value: "inactive", label: "Inactive" },
+    { value: "closed", label: "Temporarily Closed" },
+    { value: "suspended", label: "Suspended" },
+  ];
+
+  const deliveryTypes = [
+    { value: "self", label: "Self Delivery" },
+    { value: "platform", label: "Platform Delivery" },
+    { value: "both", label: "Both" },
+    { value: "pickup_only", label: "Pickup Only" },
+  ];
+
+  const cuisineOptions = [
+    "Indian",
+    "Chinese",
+    "Italian",
+    "Mexican",
+    "Thai",
+    "Continental",
+    "Japanese",
+    "Korean",
+    "American",
+    "Mediterranean",
+    "French",
+    "Spanish",
+    "Greek",
+    "Lebanese",
+    "Vietnamese",
+  ];
+
+  const weekDays = [
+    "monday",
+    "tuesday",
+    "wednesday",
+    "thursday",
+    "friday",
+    "saturday",
+    "sunday",
   ];
 
   const handleInputChange = (e) => {
-    const { name, value } = e.target;
+    const { name, value, type, checked } = e.target;
     setFormData((prev) => ({
       ...prev,
-      [name]: value,
+      [name]: type === "checkbox" ? checked : value,
     }));
 
-    // Clear error when user starts typing
     if (errors[name]) {
-      setErrors((prev) => ({
-        ...prev,
-        [name]: "",
-      }));
+      setErrors((prev) => ({ ...prev, [name]: "" }));
     }
   };
 
-  const handleCheckboxChange = (day) => {
+  const handleCuisineChange = (cuisine) => {
     setFormData((prev) => ({
       ...prev,
-      workingDays: prev.workingDays.includes(day)
-        ? prev.workingDays.filter((d) => d !== day)
-        : [...prev.workingDays, day],
+      cuisine_types: prev.cuisine_types.includes(cuisine)
+        ? prev.cuisine_types.filter((c) => c !== cuisine)
+        : [...prev.cuisine_types, cuisine],
+    }));
+  };
+
+  const handleWeeklyOffChange = (day) => {
+    setFormData((prev) => ({
+      ...prev,
+      weekly_off: prev.weekly_off.includes(day)
+        ? prev.weekly_off.filter((d) => d !== day)
+        : [...prev.weekly_off, day],
     }));
   };
 
   const validateStep = (step) => {
     const newErrors = {};
-
     switch (step) {
       case 1:
-        if (!formData.restaurantName.trim())
-          newErrors.restaurantName = "Restaurant name is required";
-        if (!formData.ownerName.trim())
-          newErrors.ownerName = "Owner name is required";
-        if (!formData.email.trim()) newErrors.email = "Email is required";
-        if (!formData.phone.trim())
-          newErrors.phone = "Phone number is required";
-        if (formData.phone && !/^\d{10}$/.test(formData.phone))
-          newErrors.phone = "Phone number must be 10 digits";
+        if (!formData.name.trim())
+          newErrors.name = "Restaurant name is required";
+        if (!formData.category.trim())
+          newErrors.category = "Category is required";
+        if (!formData.food_categories.trim())
+          newErrors.food_categories = "Food categories are required";
+        if (formData.cuisine_types.length === 0)
+          newErrors.cuisine_types = "Select at least one cuisine type";
         break;
       case 2:
         if (!formData.address.trim()) newErrors.address = "Address is required";
         if (!formData.city.trim()) newErrors.city = "City is required";
         if (!formData.state.trim()) newErrors.state = "State is required";
         if (!formData.pincode.trim()) newErrors.pincode = "Pincode is required";
+        if (!formData.phone.trim())
+          newErrors.phone = "Phone number is required";
+        if (formData.phone && !/^\d{10}$/.test(formData.phone))
+          newErrors.phone = "Phone must be 10 digits";
+        if (formData.email && !/\S+@\S+\.\S+/.test(formData.email))
+          newErrors.email = "Invalid email format";
         break;
       case 3:
-        if (!formData.cuisineType)
-          newErrors.cuisineType = "Cuisine type is required";
-        if (!formData.restaurantType)
-          newErrors.restaurantType = "Restaurant type is required";
-        if (!formData.seatingCapacity)
-          newErrors.seatingCapacity = "Seating capacity is required";
+        if (
+          !formData.is_24_hours &&
+          (!formData.opening_time || !formData.closing_time)
+        ) {
+          newErrors.opening_time = "Business hours are required";
+        }
+        break;
+      case 4:
+        // Optional validation: Require at least one payment method
+        if (
+          !formData.accepts_cash &&
+          !formData.accepts_card &&
+          !formData.accepts_upi
+        ) {
+          newErrors.payment_methods = "Select at least one payment method";
+        }
+        break;
+      default:
+        newErrors.general = "Unknown step in validation.";
         break;
     }
 
+    console.log("Validation errors for step", step, ":", newErrors);
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
-  const nextStep = () => {
+  const handleNext = () => {
+    console.log("handleNext called, currentStep:", currentStep);
     if (validateStep(currentStep)) {
-      setCurrentStep((prev) => Math.min(prev + 1, 5));
+      setCurrentStep((prev) => {
+        const nextStep = Math.min(prev + 1, 4);
+        console.log("Moving to step:", nextStep);
+        return nextStep;
+      });
     }
   };
 
-  const prevStep = () => {
+  const handlePrev = () => {
     setCurrentStep((prev) => Math.max(prev - 1, 1));
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
-    setIsSubmitting(true);
-
-    try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 2000));
-      alert("Restaurant registration submitted successfully!");
-      console.log("Form Data:", formData);
-    } catch (error) {
-      alert("Registration failed. Please try again.");
-    } finally {
-      setIsSubmitting(false);
+    console.log("handleSubmit called, currentStep:", currentStep, "event:", e);
+    if (currentStep === 4 && validateStep(currentStep)) {
+      console.log("Submitting form with data:", formData);
+      setRestaurantData(formData);
+      setIsRegistered(true);
+      navigate("/restaurant/profile");
+    } else if (validateStep(currentStep)) {
+      setCurrentStep((prev) => {
+        const nextStep = Math.min(prev + 1, 4);
+        console.log("Moving to step from submit:", nextStep);
+        return nextStep;
+      });
     }
   };
 
-  const FormInput = ({
-    label,
-    name,
-    type = "text",
-    required = false,
-    placeholder,
-    icon: Icon,
-    ...props
-  }) => (
-    <div className="space-y-2">
-      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-        {label} {required && <span className="text-red-500">*</span>}
-      </label>
-      <div className="relative">
-        {Icon && (
-          <Icon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-        )}
-        <input
-          type={type}
-          name={name}
-          value={formData[name]}
-          onChange={handleInputChange}
-          placeholder={placeholder}
-          className={`w-full ${
-            Icon ? "pl-10" : "pl-4"
-          } pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200 bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 ${
-            errors[name] ? "border-red-500 ring-2 ring-red-200" : ""
-          }`}
-          {...props}
-        />
-      </div>
-      {errors[name] && (
-        <motion.p
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="text-red-500 text-sm flex items-center gap-1"
-        >
-          <AlertCircle className="h-4 w-4" />
-          {errors[name]}
-        </motion.p>
-      )}
-    </div>
-  );
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter" && e.target.tagName !== "BUTTON") {
+      e.preventDefault();
+      console.log("Enter key prevented from submitting form");
+    }
+  };
 
-  const FormSelect = ({
-    label,
-    name,
-    options,
-    required = false,
-    placeholder,
-    icon: Icon,
-  }) => (
-    <div className="space-y-2">
-      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-        {label} {required && <span className="text-red-500">*</span>}
-      </label>
-      <div className="relative">
-        {Icon && (
-          <Icon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-        )}
-        <select
-          name={name}
-          value={formData[name]}
-          onChange={handleInputChange}
-          className={`w-full ${
-            Icon ? "pl-10" : "pl-4"
-          } pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200 bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white ${
-            errors[name] ? "border-red-500 ring-2 ring-red-200" : ""
-          }`}
-        >
-          <option value="">{placeholder}</option>
-          {options.map((option) => (
-            <option key={option} value={option}>
-              {option}
-            </option>
-          ))}
-        </select>
-      </div>
-      {errors[name] && (
-        <motion.p
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="text-red-500 text-sm flex items-center gap-1"
-        >
-          <AlertCircle className="h-4 w-4" />
-          {errors[name]}
-        </motion.p>
-      )}
-    </div>
-  );
+  const handleMapToggle = () => {
+    setShowMap(!showMap);
+  };
 
-  const StepIndicator = () => (
-    <div className="flex items-center justify-center mb-8">
-      {[1, 2, 3, 4, 5].map((step) => (
-        <div key={step} className="flex items-center">
-          <motion.div
-            className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-medium ${
-              step <= currentStep
-                ? "bg-orange-500 text-white"
-                : "bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-400"
-            }`}
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.9 }}
-          >
-            {step < currentStep ? <Check className="h-5 w-5" /> : step}
-          </motion.div>
-          {step < 5 && (
+  const renderStepIndicator = () => (
+    <div className="flex justify-center mb-8">
+      <div className="flex items-center space-x-4">
+        {[1, 2, 3, 4].map((step) => (
+          <div key={step} className="flex items-center">
             <div
-              className={`w-12 h-1 mx-2 ${
-                step < currentStep
-                  ? "bg-orange-500"
-                  : "bg-gray-200 dark:bg-gray-700"
+              className={`w-10 h-10 rounded-full flex items-center justify-center font-semibold transition-all duration-300 ${
+                currentStep >= step
+                  ? "bg-gradient-to-r from-orange-500 to-red-500 text-white shadow-lg"
+                  : "bg-gray-200 text-gray-500"
               }`}
-            />
+            >
+              {step}
+            </div>
+            {step < 4 && (
+              <div
+                className={`w-12 h-1 mx-2 transition-all duration-300 ${
+                  currentStep > step
+                    ? "bg-gradient-to-r from-orange-500 to-red-500"
+                    : "bg-gray-200"
+                }`}
+              />
+            )}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+
+  const renderStep1 = () => (
+    <div className="space-y-6">
+      <div className="text-center mb-8">
+        <ChefHat className="mx-auto h-12 w-12 text-orange-500 mb-4" />
+        <h2 className="text-2xl font-bold text-gray-900">Basic Information</h2>
+        <p className="text-gray-600">Tell us about your restaurant</p>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="lg:col-span-2">
+          <label className="block text-sm font-semibold text-gray-700 mb-2">
+            Restaurant Name <span className="text-red-500">*</span>
+          </label>
+          <input
+            type="text"
+            name="name"
+            value={formData.name}
+            onChange={handleInputChange}
+            className={`w-full px-4 py-3 border-2 rounded-xl focus:ring-4 focus:ring-orange-100 focus:border-orange-500 transition-all duration-200 ${
+              errors.name ? "border-red-500" : "border-gray-300"
+            }`}
+            placeholder="Enter restaurant name"
+          />
+          {errors.name && (
+            <p className="text-red-500 text-sm mt-1 flex items-center">
+              <AlertCircle className="w-4 h-4 mr-1" />
+              {errors.name}
+            </p>
           )}
         </div>
-      ))}
+
+        <div>
+          <label className="block text-sm font-semibold text-gray-700 mb-2">
+            Restaurant Type
+          </label>
+          <select
+            name="restaurant_type"
+            value={formData.restaurant_type}
+            onChange={handleInputChange}
+            className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-4 focus:ring-orange-100 focus:border-orange-500 transition-all duration-200"
+          >
+            {restaurantTypes.map((type) => (
+              <option key={type.value} value={type.value}>
+                {type.label}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div>
+          <label className="block text-sm font-semibold text-gray-700 mb-2">
+            Category <span className="text-red-500">*</span>
+          </label>
+          <input
+            type="text"
+            name="category"
+            value={formData.category}
+            onChange={handleInputChange}
+            className={`w-full px-4 py-3 border-2 rounded-xl focus:ring-4 focus:ring-orange-100 focus:border-orange-500 transition-all duration-200 ${
+              errors.category ? "border-red-500" : "border-gray-300"
+            }`}
+            placeholder="e.g., Fast Food, Fine Dining, Cafe"
+          />
+          {errors.category && (
+            <p className="text-red-500 text-sm mt-1 flex items-center">
+              <AlertCircle className="w-4 h-4 mr-1" />
+              {errors.category}
+            </p>
+          )}
+        </div>
+
+        <div className="lg:col-span-2">
+          <label className="block text-sm font-semibold text-gray-700 mb-2">
+            Food Categories <span className="text-red-500">*</span>
+          </label>
+          <input
+            type="text"
+            name="food_categories"
+            value={formData.food_categories}
+            onChange={handleInputChange}
+            className={`w-full px-4 py-3 border-2 rounded-xl focus:ring-4 focus:ring-orange-100 focus:border-orange-500 transition-all duration-200 ${
+              errors.food_categories ? "border-red-500" : "border-gray-300"
+            }`}
+            placeholder="e.g., North Indian, South Indian, Chinese"
+          />
+          {errors.food_categories && (
+            <p className="text-red-500 text-sm mt-1 flex items-center">
+              <AlertCircle className="w-4 h-4 mr-1" />
+              {errors.food_categories}
+            </p>
+          )}
+        </div>
+
+        <div className="lg:col-span-2">
+          <label className="block text-sm font-semibold text-gray-700 mb-2">
+            Cuisine Types <span className="text-red-500">*</span>
+          </label>
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
+            {cuisineOptions.map((cuisine) => (
+              <label
+                key={cuisine}
+                className="flex items-center space-x-2 cursor-pointer"
+              >
+                <input
+                  type="checkbox"
+                  checked={formData.cuisine_types.includes(cuisine)}
+                  onChange={() => handleCuisineChange(cuisine)}
+                  className="w-4 h-4 text-orange-500 border-2 border-gray-300 rounded focus:ring-orange-500 focus:ring-2"
+                />
+                <span className="text-sm text-gray-700">{cuisine}</span>
+              </label>
+            ))}
+          </div>
+          {errors.cuisine_types && (
+            <p className="text-red-500 text-sm mt-1 flex items-center">
+              <AlertCircle className="w-4 h-4 mr-1" />
+              {errors.cuisine_types}
+            </p>
+          )}
+        </div>
+
+        <div className="lg:col-span-2">
+          <label className="block text-sm font-semibold text-gray-700 mb-2">
+            Description
+          </label>
+          <textarea
+            name="description"
+            value={formData.description}
+            onChange={handleInputChange}
+            rows="4"
+            className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-4 focus:ring-orange-100 focus:border-orange-500 transition-all duration-200 resize-none"
+            placeholder="Tell customers about your restaurant..."
+          />
+        </div>
+      </div>
     </div>
   );
 
-  const renderStep = () => {
-    switch (currentStep) {
-      case 1:
-        return (
-          <motion.div
-            initial={{ opacity: 0, x: 50 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -50 }}
-            className="space-y-6"
-          >
-            <div className="text-center mb-6">
-              <ChefHat className="h-12 w-12 text-orange-500 mx-auto mb-2" />
-              <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-                Basic Information
-              </h2>
-              <p className="text-gray-600 dark:text-gray-400">
-                Let's start with your restaurant details
-              </p>
-            </div>
+  const renderStep2 = () => (
+    <div className="space-y-6">
+      <div className="text-center mb-8">
+        <MapPin className="mx-auto h-12 w-12 text-orange-500 mb-4" />
+        <h2 className="text-2xl font-bold text-gray-900">Location & Contact</h2>
+        <p className="text-gray-600">Where can customers find you?</p>
+      </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <FormInput
-                label="Restaurant Name"
-                name="restaurantName"
-                required
-                placeholder="Enter restaurant name"
-                icon={ChefHat}
-              />
-              <FormInput
-                label="Owner Name"
-                name="ownerName"
-                required
-                placeholder="Enter owner name"
-              />
-              <FormInput
-                label="Email Address"
-                name="email"
-                type="email"
-                required
-                placeholder="Enter email address"
-                icon={Mail}
-              />
-              <FormInput
-                label="Phone Number"
-                name="phone"
-                type="tel"
-                required
-                placeholder="Enter 10-digit phone number"
-                icon={Phone}
-              />
-            </div>
-          </motion.div>
-        );
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="lg:col-span-2">
+          <label className="block text-sm font-semibold text-gray-700 mb-2">
+            Address <span className="text-red-500">*</span>
+          </label>
+          <textarea
+            name="address"
+            value={formData.address}
+            onChange={handleInputChange}
+            rows="3"
+            className={`w-full px-4 py-3 border-2 rounded-xl focus:ring-4 focus:ring-orange-100 focus:border-orange-500 transition-all duration-200 resize-none ${
+              errors.address ? "border-red-500" : "border-gray-300"
+            }`}
+            placeholder="Enter complete address"
+          />
+          {errors.address && (
+            <p className="text-red-500 text-sm mt-1 flex items-center">
+              <AlertCircle className="w-4 h-4 mr-1" />
+              {errors.address}
+            </p>
+          )}
+        </div>
 
-      case 2:
-        return (
-          <motion.div
-            initial={{ opacity: 0, x: 50 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -50 }}
-            className="space-y-6"
-          >
-            <div className="text-center mb-6">
-              <MapPin className="h-12 w-12 text-orange-500 mx-auto mb-2" />
-              <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-                Location Details
-              </h2>
-              <p className="text-gray-600 dark:text-gray-400">
-                Where is your restaurant located?
-              </p>
-            </div>
+        <div>
+          <label className="block text-sm font-semibold text-gray-700 mb-2">
+            City <span className="text-red-500">*</span>
+          </label>
+          <input
+            type="text"
+            name="city"
+            value={formData.city}
+            onChange={handleInputChange}
+            className={`w-full px-4 py-3 border-2 rounded-xl focus:ring-4 focus:ring-orange-100 focus:border-orange-500 transition-all duration-200 ${
+              errors.city ? "border-red-500" : "border-gray-300"
+            }`}
+            placeholder="Enter city"
+          />
+          {errors.city && (
+            <p className="text-red-500 text-sm mt-1 flex items-center">
+              <AlertCircle className="w-4 h-4 mr-1" />
+              {errors.city}
+            </p>
+          )}
+        </div>
 
-            <div className="space-y-6">
-              <FormInput
-                label="Full Address"
-                name="address"
-                required
-                placeholder="Enter complete address"
-                icon={MapPin}
-              />
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <FormInput
-                  label="City"
-                  name="city"
-                  required
-                  placeholder="Enter city"
-                />
-                <FormInput
-                  label="State"
-                  name="state"
-                  required
-                  placeholder="Enter state"
-                />
-                <FormInput
-                  label="Pincode"
-                  name="pincode"
-                  type="number"
-                  required
-                  placeholder="Enter pincode"
-                />
+        <div>
+          <label className="block text-sm font-semibold text-gray-700 mb-2">
+            State <span className="text-red-500">*</span>
+          </label>
+          <input
+            type="text"
+            name="state"
+            value={formData.state}
+            onChange={handleInputChange}
+            className={`w-full px-4 py-3 border-2 rounded-xl focus:ring-4 focus:ring-orange-100 focus:border-orange-500 transition-all duration-200 ${
+              errors.state ? "border-red-500" : "border-gray-300"
+            }`}
+            placeholder="Enter state"
+          />
+          {errors.state && (
+            <p className="text-red-500 text-sm mt-1 flex items-center">
+              <AlertCircle className="w-4 h-4 mr-1" />
+              {errors.state}
+            </p>
+          )}
+        </div>
+
+        <div>
+          <label className="block text-sm font-semibold text-gray-700 mb-2">
+            Pincode <span className="text-red-500">*</span>
+          </label>
+          <input
+            type="text"
+            name="pincode"
+            value={formData.pincode}
+            onChange={handleInputChange}
+            className={`w-full px-4 py-3 border-2 rounded-xl focus:ring-4 focus:ring-orange-100 focus:border-orange-500 transition-all duration-200 ${
+              errors.pincode ? "border-red-500" : "border-gray-300"
+            }`}
+            placeholder="Enter pincode"
+          />
+          {errors.pincode && (
+            <p className="text-red-500 text-sm mt-1 flex items-center">
+              <AlertCircle className="w-4 h-4 mr-1" />
+              {errors.pincode}
+            </p>
+          )}
+        </div>
+
+        <div>
+          <label className="block text-sm font-semibold text-gray-700 mb-2">
+            Latitude
+          </label>
+          <input
+            type="number"
+            name="latitude"
+            value={formData.latitude}
+            onChange={handleInputChange}
+            step="0.000001"
+            className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-4 focus:ring-orange-100 focus:border-orange-500 transition-all duration-200"
+            placeholder="Enter latitude"
+            readOnly
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-semibold text-gray-700 mb-2">
+            Longitude
+          </label>
+          <input
+            type="number"
+            name="longitude"
+            value={formData.longitude}
+            onChange={handleInputChange}
+            step="0.000001"
+            className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-4 focus:ring-orange-100 focus:border-orange-500 transition-all duration-200"
+            placeholder="Enter longitude"
+            readOnly
+          />
+        </div>
+
+        <div className="lg:col-span-2">
+          <div className="flex items-center justify-between mb-4">
+            <label className="block text-sm font-semibold text-gray-700">
+              Select Location on Map
+            </label>
+            <button
+              type="button"
+              onClick={handleMapToggle}
+              className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-all duration-200 flex items-center space-x-2"
+            >
+              <MapPin className="w-4 h-4" />
+              <span>{showMap ? "Hide Map" : "Show Map"}</span>
+            </button>
+          </div>
+
+          {showMap && (
+            <div className="relative">
+              <div
+                ref={mapRef}
+                className="w-full h-80 rounded-xl border-2 border-gray-300 bg-gray-100 flex items-center justify-center"
+              >
+                {!isMapLoaded && (
+                  <div className="text-center">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500 mx-auto mb-2"></div>
+                    <p className="text-gray-600 text-sm">
+                      Loading Google Maps...
+                    </p>
+                    <p className="text-gray-500 text-xs mt-1">
+                      Note: You'll need a valid Google Maps API key
+                    </p>
+                  </div>
+                )}
               </div>
+              {showMap && (
+                <div className="mt-2 p-3 bg-blue-50 rounded-lg">
+                  <p className="text-sm text-blue-700">
+                    📍 Click on the map or drag the marker to set your
+                    restaurant location
+                  </p>
+                </div>
+              )}
             </div>
-          </motion.div>
-        );
+          )}
+        </div>
 
-      case 3:
-        return (
-          <motion.div
-            initial={{ opacity: 0, x: 50 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -50 }}
-            className="space-y-6"
-          >
-            <div className="text-center mb-6">
-              <Star className="h-12 w-12 text-orange-500 mx-auto mb-2" />
-              <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-                Restaurant Details
-              </h2>
-              <p className="text-gray-600 dark:text-gray-400">
-                Tell us about your restaurant
+        <div>
+          <label className="block text-sm font-semibold text-gray-700 mb-2">
+            Phone Number <span className="text-red-500">*</span>
+          </label>
+          <div className="relative">
+            <Phone className="absolute left-3 top-3.5 h-5 w-5 text-gray-400" />
+            <input
+              type="tel"
+              name="phone"
+              value={formData.phone}
+              onChange={handleInputChange}
+              className={`w-full pl-10 pr-4 py-3 border-2 rounded-xl focus:ring-4 focus:ring-orange-100 focus:border-orange-500 transition-all duration-200 ${
+                errors.phone ? "border-red-500" : "border-gray-300"
+              }`}
+              placeholder="Enter 10-digit phone number"
+            />
+            {errors.phone && (
+              <p className="text-red-500 text-sm mt-1 flex items-center">
+                <AlertCircle className="w-4 h-4 mr-1" />
+                {errors.phone}
               </p>
-            </div>
+            )}
+          </div>
+        </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <FormSelect
-                label="Cuisine Type"
-                name="cuisineType"
-                options={cuisineOptions}
-                required
-                placeholder="Select cuisine type"
-                icon={ChefHat}
-              />
-              <FormSelect
-                label="Restaurant Type"
-                name="restaurantType"
-                options={restaurantTypes}
-                required
-                placeholder="Select restaurant type"
-                icon={Star}
-              />
-              <FormInput
-                label="Seating Capacity"
-                name="seatingCapacity"
-                type="number"
-                required
-                placeholder="Enter seating capacity"
-                icon={Users}
-              />
-              <FormInput
-                label="Average Price per Person"
-                name="averagePrice"
-                type="number"
-                placeholder="Enter average price (₹)"
-              />
-            </div>
+        <div>
+          <label className="block text-sm font-semibold text-gray-700 mb-2">
+            Email
+          </label>
+          <div className="relative">
+            <Mail className="absolute left-3 top-3.5 h-5 w-5 text-gray-400" />
+            <input
+              type="email"
+              name="email"
+              value={formData.email}
+              onChange={handleInputChange}
+              className={`w-full pl-10 pr-4 py-3 border-2 rounded-xl focus:ring-4 focus:ring-orange-100 focus:border-orange-500 transition-all duration-200 ${
+                errors.email ? "border-red-500" : "border-gray-300"
+              }`}
+              placeholder="Enter email address"
+            />
+            {errors.email && (
+              <p className="text-red-500 text-sm mt-1 flex items-center">
+                <AlertCircle className="w-4 h-4 mr-1" />
+                {errors.email}
+              </p>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 
-            <div className="space-y-4">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                Restaurant Description
+  const renderStep3 = () => (
+    <div className="space-y-6">
+      <div className="text-center mb-8">
+        <Clock className="mx-auto h-12 w-12 text-orange-500 mb-4" />
+        <h2 className="text-2xl font-bold text-gray-900">
+          Business Hours & Delivery
+        </h2>
+        <p className="text-gray-600">
+          Set your operating hours and delivery options
+        </p>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="lg:col-span-2">
+          <div className="flex items-center space-x-3 mb-4">
+            <input
+              type="checkbox"
+              name="is_24_hours"
+              checked={formData.is_24_hours}
+              onChange={handleInputChange}
+              className="w-5 h-5 text-orange-500 border-2 border-gray-300 rounded focus:ring-orange-500 focus:ring-2"
+            />
+            <label className="text-sm font-semibold text-gray-700">
+              Open 24 Hours
+            </label>
+          </div>
+        </div>
+
+        {!formData.is_24_hours && (
+          <>
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                Opening Time <span className="text-red-500">*</span>
               </label>
-              <textarea
-                name="description"
-                value={formData.description}
+              <input
+                type="time"
+                name="opening_time"
+                value={formData.opening_time}
                 onChange={handleInputChange}
-                rows="3"
-                placeholder="Describe your restaurant, ambiance, and unique features..."
-                className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200 bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
+                className={`w-full px-4 py-3 border-2 rounded-xl focus:ring-4 focus:ring-orange-100 focus:border-orange-500 transition-all duration-200 ${
+                  errors.opening_time ? "border-red-500" : "border-gray-300"
+                }`}
               />
-            </div>
-          </motion.div>
-        );
-
-      case 4:
-        return (
-          <motion.div
-            initial={{ opacity: 0, x: 50 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -50 }}
-            className="space-y-6"
-          >
-            <div className="text-center mb-6">
-              <Clock className="h-12 w-12 text-orange-500 mx-auto mb-2" />
-              <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-                Business Information
-              </h2>
-              <p className="text-gray-600 dark:text-gray-400">
-                Operating hours and business details
-              </p>
+              {errors.opening_time && (
+                <p className="text-red-500 text-sm mt-1 flex items-center">
+                  <AlertCircle className="w-4 h-4 mr-1" />
+                  {errors.opening_time}
+                </p>
+              )}
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <FormInput
-                label="Opening Time"
-                name="openingTime"
-                type="time"
-                placeholder="Select opening time"
-                icon={Clock}
-              />
-              <FormInput
-                label="Closing Time"
-                name="closingTime"
-                type="time"
-                placeholder="Select closing time"
-                icon={Clock}
-              />
-              <FormInput
-                label="GST Number"
-                name="gstNumber"
-                placeholder="Enter GST number"
-              />
-              <FormInput
-                label="FSSAI License"
-                name="fssaiLicense"
-                placeholder="Enter FSSAI license number"
-              />
-              <FormInput
-                label="Established Year"
-                name="establishedYear"
-                type="number"
-                placeholder="Enter establishment year"
-              />
-              <FormInput
-                label="Specialities"
-                name="specialities"
-                placeholder="Enter your signature dishes"
-              />
-            </div>
-
-            <div className="space-y-4">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                Working Days
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                Closing Time <span className="text-red-500">*</span>
               </label>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                {workingDaysOptions.map((day) => (
-                  <label
-                    key={day}
-                    className="flex items-center space-x-2 cursor-pointer"
-                  >
-                    <input
-                      type="checkbox"
-                      checked={formData.workingDays.includes(day)}
-                      onChange={() => handleCheckboxChange(day)}
-                      className="w-4 h-4 text-orange-500 bg-gray-100 border-gray-300 rounded focus:ring-orange-500 dark:bg-gray-700 dark:border-gray-600"
-                    />
-                    <span className="text-sm text-gray-700 dark:text-gray-300">
-                      {day}
-                    </span>
-                  </label>
-                ))}
-              </div>
+              <input
+                type="time"
+                name="closing_time"
+                value={formData.closing_time}
+                onChange={handleInputChange}
+                className={`w-full px-4 py-3 border-2 rounded-xl focus:ring-4 focus:ring-orange-100 focus:border-orange-500 transition-all duration-200 ${
+                  errors.closing_time ? "border-red-500" : "border-gray-300"
+                }`}
+              />
+              {errors.closing_time && (
+                <p className="text-red-500 text-sm mt-1 flex items-center">
+                  <AlertCircle className="w-4 h-4 mr-1" />
+                  {errors.closing_time}
+                </p>
+              )}
             </div>
-          </motion.div>
-        );
+          </>
+        )}
 
-      case 5:
-        return (
-          <motion.div
-            initial={{ opacity: 0, x: 50 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -50 }}
-            className="space-y-6"
-          >
-            <div className="text-center mb-6">
-              <Upload className="h-12 w-12 text-orange-500 mx-auto mb-2" />
-              <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-                Final Review
-              </h2>
-              <p className="text-gray-600 dark:text-gray-400">
-                Review your information before submitting
-              </p>
-            </div>
+        <div className="lg:col-span-2">
+          <label className="block text-sm font-semibold text-gray-700 mb-2">
+            Weekly Off Days
+          </label>
+          <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3">
+            {weekDays.map((day) => (
+              <label
+                key={day}
+                className="flex items-center space-x-2 cursor-pointer"
+              >
+                <input
+                  type="checkbox"
+                  checked={formData.weekly_off.includes(day)}
+                  onChange={() => handleWeeklyOffChange(day)}
+                  className="w-4 h-4 text-orange-500 border-2 border-gray-300 rounded focus:ring-orange-500 focus:ring-2"
+                />
+                <span className="text-sm text-gray-700 capitalize">
+                  {day.slice(0, 3)}
+                </span>
+              </label>
+            ))}
+          </div>
+        </div>
 
-            <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-6 space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                <div>
-                  <span className="font-medium text-gray-700 dark:text-gray-300">
-                    Restaurant:
-                  </span>
-                  <span className="ml-2 text-gray-900 dark:text-white">
-                    {formData.restaurantName}
-                  </span>
-                </div>
-                <div>
-                  <span className="font-medium text-gray-700 dark:text-gray-300">
-                    Owner:
-                  </span>
-                  <span className="ml-2 text-gray-900 dark:text-white">
-                    {formData.ownerName}
-                  </span>
-                </div>
-                <div>
-                  <span className="font-medium text-gray-700 dark:text-gray-300">
-                    Email:
-                  </span>
-                  <span className="ml-2 text-gray-900 dark:text-white">
-                    {formData.email}
-                  </span>
-                </div>
-                <div>
-                  <span className="font-medium text-gray-700 dark:text-gray-300">
-                    Phone:
-                  </span>
-                  <span className="ml-2 text-gray-900 dark:text-white">
-                    {formData.phone}
-                  </span>
-                </div>
-                <div>
-                  <span className="font-medium text-gray-700 dark:text-gray-300">
-                    Location:
-                  </span>
-                  <span className="ml-2 text-gray-900 dark:text-white">
-                    {formData.city}, {formData.state}
-                  </span>
-                </div>
-                <div>
-                  <span className="font-medium text-gray-700 dark:text-gray-300">
-                    Cuisine:
-                  </span>
-                  <span className="ml-2 text-gray-900 dark:text-white">
-                    {formData.cuisineType}
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            <div className="flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-400">
+        <div className="lg:col-span-2">
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">
+            Delivery Options
+          </h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="flex items-center space-x-3">
               <input
                 type="checkbox"
-                required
-                className="w-4 h-4 text-orange-500"
+                name="delivery_available"
+                checked={formData.delivery_available}
+                onChange={handleInputChange}
+                className="w-5 h-5 text-orange-500 border-2 border-gray-300 rounded focus:ring-orange-500 focus:ring-2"
               />
-              <span>
-                I agree to the terms and conditions and privacy policy
-              </span>
+              <label className="text-sm font-semibold text-gray-700">
+                Delivery Available
+              </label>
             </div>
-          </motion.div>
-        );
+            <div className="flex items-center space-x-3">
+              <input
+                type="checkbox"
+                name="pickup_available"
+                checked={formData.pickup_available}
+                onChange={handleInputChange}
+                className="w-5 h-5 text-orange-500 border-2 border-gray-300 rounded focus:ring-orange-500 focus:ring-2"
+              />
+              <label className="text-sm font-semibold text-gray-700">
+                Pickup Available
+              </label>
+            </div>
+          </div>
+        </div>
 
+        <div>
+          <label className="block text-sm font-semibold text-gray-700 mb-2">
+            Delivery Type
+          </label>
+          <select
+            name="delivery_type"
+            value={formData.delivery_type}
+            onChange={handleInputChange}
+            className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-4 focus:ring-orange-100 focus:border-orange-500 transition-all duration-200"
+          >
+            {deliveryTypes.map((type) => (
+              <option key={type.value} value={type.value}>
+                {type.label}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div>
+          <label className="block text-sm font-semibold text-gray-700 mb-2">
+            Delivery Radius (KM)
+          </label>
+          <input
+            type="number"
+            name="delivery_radius"
+            value={formData.delivery_radius}
+            onChange={handleInputChange}
+            min="1"
+            className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-4 focus:ring-orange-100 focus:border-orange-500 transition-all duration-200"
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-semibold text-gray-700 mb-2">
+            Min Delivery Time (Minutes)
+          </label>
+          <input
+            type="number"
+            name="min_delivery_time"
+            value={formData.min_delivery_time}
+            onChange={handleInputChange}
+            min="1"
+            className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-4 focus:ring-orange-100 focus:border-orange-500 transition-all duration-200"
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-semibold text-gray-700 mb-2">
+            Max Delivery Time (Minutes)
+          </label>
+          <input
+            type="number"
+            name="max_delivery_time"
+            value={formData.max_delivery_time}
+            onChange={handleInputChange}
+            min="1"
+            className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-4 focus:ring-orange-100 focus:border-orange-500 transition-all duration-200"
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-semibold text-gray-700 mb-2">
+            Min Order Amount (₹)
+          </label>
+          <input
+            type="number"
+            name="min_order_amount"
+            value={formData.min_order_amount}
+            onChange={handleInputChange}
+            min="0"
+            step="0.01"
+            className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-4 focus:ring-orange-100 focus:border-orange-500 transition-all duration-200"
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-semibold text-gray-700 mb-2">
+            Delivery Fee (₹)
+          </label>
+          <input
+            type="number"
+            name="delivery_fee"
+            value={formData.delivery_fee}
+            onChange={handleInputChange}
+            min="0"
+            step="0.01"
+            className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-4 focus:ring-orange-100 focus:border-orange-500 transition-all duration-200"
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-semibold text-gray-700 mb-2">
+            Packaging Fee (₹)
+          </label>
+          <input
+            type="number"
+            name="packaging_fee"
+            value={formData.packaging_fee}
+            onChange={handleInputChange}
+            min="0"
+            step="0.01"
+            className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-4 focus:ring-orange-100 focus:border-orange-500 transition-all duration-200"
+          />
+        </div>
+      </div>
+    </div>
+  );
+
+  const renderStep4 = () => (
+    <div className="space-y-6">
+      <div className="text-center mb-8">
+        <Star className="mx-auto h-12 w-12 text-orange-500 mb-4" />
+        <h2 className="text-2xl font-bold text-gray-900">
+          Business Details & Features
+        </h2>
+        <p className="text-gray-600">Complete your restaurant profile</p>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div>
+          <label className="block text-sm font-semibold text-gray-700 mb-2">
+            GST Number
+          </label>
+          <input
+            type="text"
+            name="gst_number"
+            value={formData.gst_number}
+            onChange={handleInputChange}
+            className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-4 focus:ring-orange-100 focus:border-orange-500 transition-all duration-200"
+            placeholder="Enter GST number"
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-semibold text-gray-700 mb-2">
+            FSSAI License
+          </label>
+          <input
+            type="text"
+            name="fssai_license"
+            value={formData.fssai_license}
+            onChange={handleInputChange}
+            className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-4 focus:ring-orange-100 focus:border-orange-500 transition-all duration-200"
+            placeholder="Enter FSSAI license number"
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-semibold text-gray-700 mb-2">
+            Business License
+          </label>
+          <input
+            type="text"
+            name="business_license"
+            value={formData.business_license}
+            onChange={handleInputChange}
+            className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-4 focus:ring-orange-100 focus:border-orange-500 transition-all duration-200"
+            placeholder="Enter business license number"
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-semibold text-gray-700 mb-2">
+            Status
+          </label>
+          <select
+            name="status"
+            value={formData.status}
+            onChange={handleInputChange}
+            className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-4 focus:ring-orange-100 focus:border-orange-500 transition-all duration-200"
+          >
+            {statusChoices.map((status) => (
+              <option key={status.value} value={status.value}>
+                {status.label}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div className="lg:col-span-2">
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">
+            Payment Methods
+          </h3>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div className="flex items-center space-x-3 p-4 border-2 border-gray-200 rounded-xl hover:border-orange-300 transition-all duration-200">
+              <input
+                type="checkbox"
+                name="accepts_cash"
+                checked={formData.accepts_cash}
+                onChange={handleInputChange}
+                className="w-5 h-5 text-orange-500 border-2 border-gray-300 rounded focus:ring-orange-500 focus:ring-2"
+              />
+              <CreditCard className="h-5 w-5 text-gray-600" />
+              <label className="text-sm font-semibold text-gray-700">
+                Cash
+              </label>
+            </div>
+            <div className="flex items-center space-x-3 p-4 border-2 border-gray-200 rounded-xl hover:border-orange-300 transition-all duration-200">
+              <input
+                type="checkbox"
+                name="accepts_card"
+                checked={formData.accepts_card}
+                onChange={handleInputChange}
+                className="w-5 h-5 text-orange-500 border-2 border-gray-300 rounded focus:ring-orange-500 focus:ring-2"
+              />
+              <CreditCard className="h-5 w-5 text-gray-600" />
+              <label className="text-sm font-semibold text-gray-700">
+                Card
+              </label>
+            </div>
+            <div className="flex items-center space-x-3 p-4 border-2 border-gray-200 rounded-xl hover:border-orange-300 transition-all duration-200">
+              <input
+                type="checkbox"
+                name="accepts_upi"
+                checked={formData.accepts_upi}
+                onChange={handleInputChange}
+                className="w-5 h-5 text-orange-500 border-2 border-gray-300 rounded focus:ring-orange-500 focus:ring-2"
+              />
+              <Phone className="h-5 w-5 text-gray-600" />
+              <label className="text-sm font-semibold text-gray-700">UPI</label>
+            </div>
+          </div>
+        </div>
+
+        <div className="lg:col-span-2">
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">
+            Amenities
+          </h3>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div className="flex items-center space-x-3 p-4 border-2 border-gray-200 rounded-xl hover:border-orange-300 transition-all duration-200">
+              <input
+                type="checkbox"
+                name="has_parking"
+                checked={formData.has_parking}
+                onChange={handleInputChange}
+                className="w-5 h-5 text-orange-500 border-2 border-gray-300 rounded focus:ring-orange-500 focus:ring-2"
+              />
+              <Car className="h-5 w-5 text-gray-600" />
+              <label className="text-sm font-semibold text-gray-700">
+                Parking
+              </label>
+            </div>
+            <div className="flex items-center space-x-3 p-4 border-2 border-gray-200 rounded-xl hover:border-orange-300 transition-all duration-200">
+              <input
+                type="checkbox"
+                name="has_wifi"
+                checked={formData.has_wifi}
+                onChange={handleInputChange}
+                className="w-5 h-5 text-orange-500 border-2 border-gray-300 rounded focus:ring-orange-500 focus:ring-2"
+              />
+              <Wifi className="h-5 w-5 text-gray-600" />
+              <label className="text-sm font-semibold text-gray-700">
+                WiFi
+              </label>
+            </div>
+            <div className="flex items-center space-x-3 p-4 border-2 border-gray-200 rounded-xl hover:border-orange-300 transition-all duration-200">
+              <input
+                type="checkbox"
+                name="has_ac"
+                checked={formData.has_ac}
+                onChange={handleInputChange}
+                className="w-5 h-5 text-orange-500 border-2 border-gray-300 rounded focus:ring-orange-500 focus:ring-2"
+              />
+              <Thermometer className="h-5 w-5 text-gray-600" />
+              <label className="text-sm font-semibold text-gray-700">AC</label>
+            </div>
+          </div>
+        </div>
+
+        <div className="lg:col-span-2">
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">
+            Verification & Promotion
+          </h3>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div className="flex items-center space-x-3 p-4 border-2 border-gray-200 rounded-xl hover:border-orange-300 transition-all duration-200">
+              <input
+                type="checkbox"
+                name="is_verified"
+                checked={formData.is_verified}
+                onChange={handleInputChange}
+                className="w-5 h-5 text-orange-500 border-2 border-gray-300 rounded focus:ring-orange-500 focus:ring-2"
+              />
+              <CheckCircle className="h-5 w-5 text-gray-600" />
+              <label className="text-sm font-semibold text-gray-700">
+                Verified
+              </label>
+            </div>
+            <div className="flex items-center space-x-3 p-4 border-2 border-gray-200 rounded-xl hover:border-orange-300 transition-all duration-200">
+              <input
+                type="checkbox"
+                name="is_featured"
+                checked={formData.is_featured}
+                onChange={handleInputChange}
+                className="w-5 h-5 text-orange-500 border-2 border-gray-300 rounded focus:ring-orange-500 focus:ring-2"
+              />
+              <Star className="h-5 w-5 text-gray-600" />
+              <label className="text-sm font-semibold text-gray-700">
+                Featured
+              </label>
+            </div>
+            <div className="flex items-center space-x-3 p-4 border-2 border-gray-200 rounded-xl hover:border-orange-300 transition-all duration-200">
+              <input
+                type="checkbox"
+                name="is_promoted"
+                checked={formData.is_promoted}
+                onChange={handleInputChange}
+                className="w-5 h-5 text-orange-500 border-2 border-gray-300 rounded focus:ring-orange-500 focus:ring-2"
+              />
+              <Star className="h-5 w-5 text-gray-600" />
+              <label className="text-sm font-semibold text-gray-700">
+                Promoted
+              </label>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
+  const renderCurrentStep = () => {
+    console.log("Rendering step:", currentStep);
+    switch (currentStep) {
+      case 1:
+        return renderStep1();
+      case 2:
+        return renderStep2();
+      case 3:
+        return renderStep3();
+      case 4:
+        return renderStep4();
       default:
-        return null;
+        return renderStep1();
     }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-red-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 py-8 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-4xl mx-auto">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl overflow-hidden"
-        >
-          <div className="bg-gradient-to-r from-orange-500 to-red-500 px-8 py-6">
-            <h1 className="text-3xl font-bold text-white text-center">
-              Restaurant Registration
-            </h1>
-            <p className="text-orange-100 text-center mt-2">
-              Join our platform and grow your business
-            </p>
-          </div>
+    <>
+      <RestaurantNavbar />
+      <div className="min-h-screen bg-gradient-to-br from-orange-50 via-red-50 to-pink-50 py-6 px-4">
+        <div className="max-w-4xl mx-auto">
+          <div className="bg-white/80 backdrop-blur-lg rounded-3xl shadow-2xl border border-white/20 overflow-hidden">
+            <div className="bg-gradient-to-r from-orange-500 to-red-500 p-8">
+              <h1 className="text-3xl md:text-4xl font-bold text-white mb-2">
+                Register Your Restaurant
+              </h1>
+              <p className="text-orange-100">
+                Join our platform and start serving your delicious food!
+              </p>
+            </div>
 
-          <div className="p-8">
-            <StepIndicator />
+            <div className="p-6 md:p-12">
+              {renderStepIndicator()}
 
-            <div onSubmit={handleSubmit}>
-              <AnimatePresence mode="wait">{renderStep()}</AnimatePresence>
+              <form onSubmit={handleSubmit} className="space-y-8">
+                {renderCurrentStep()}
 
-              <div className="flex justify-between mt-8 pt-6 border-t border-gray-200 dark:border-gray-700">
-                {currentStep > 1 && (
-                  <motion.button
+                <div className="flex justify-between items-center pt-8 border-t border-gray-200">
+                  <button
                     type="button"
-                    onClick={prevStep}
-                    className="px-6 py-3 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-all duration-200 flex items-center gap-2"
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
+                    onClick={handlePrev}
+                    disabled={currentStep === 1}
+                    className={`px-6 py-3 rounded-xl font-semibold transition-all duration-300 ${
+                      currentStep === 1
+                        ? "bg-gray-200 text-gray-400 cursor-not-allowed"
+                        : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                    }`}
                   >
                     Previous
-                  </motion.button>
-                )}
+                  </button>
 
-                <div className="ml-auto">
-                  {currentStep < 5 ? (
-                    <motion.button
+                  <div className="text-sm text-gray-500">
+                    Step {currentStep} of 4
+                  </div>
+
+                  {currentStep < 4 ? (
+                    <button
                       type="button"
-                      onClick={nextStep}
-                      className="px-8 py-3 bg-gradient-to-r from-orange-500 to-red-500 text-white rounded-lg hover:from-orange-600 hover:to-red-600 transition-all duration-200 flex items-center gap-2 font-medium"
-                      whileHover={{ scale: 1.02 }}
-                      whileTap={{ scale: 0.98 }}
+                      onClick={handleNext}
+                      className="px-6 py-3 bg-gradient-to-r from-orange-500 to-red-500 text-white rounded-xl font-semibold hover:from-orange-600 hover:to-red-600 transition-all duration-300 shadow-lg hover:shadow-xl"
                     >
-                      Next Step
-                      <ArrowRight className="h-4 w-4" />
-                    </motion.button>
+                      Next
+                    </button>
                   ) : (
-                    <motion.button
-                      type="button"
-                      onClick={handleSubmit}
-                      disabled={isSubmitting}
-                      className="px-8 py-3 bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-lg hover:from-green-600 hover:to-emerald-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 flex items-center gap-2 font-medium"
-                      whileHover={{ scale: isSubmitting ? 1 : 1.02 }}
-                      whileTap={{ scale: isSubmitting ? 1 : 0.98 }}
+                    <button
+                      type="submit"
+                      className="px-6 py-3 bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-xl font-semibold hover:from-green-600 hover:to-emerald-600 transition-all duration-300 shadow-lg hover:shadow-xl flex items-center space-x-2"
                     >
-                      {isSubmitting ? (
-                        <>
-                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                          Submitting...
-                        </>
-                      ) : (
-                        <>
-                          Submit Registration
-                          <Check className="h-4 w-4" />
-                        </>
-                      )}
-                    </motion.button>
+                      <CheckCircle className="w-5 h-5" />
+                      <span>Register Restaurant</span>
+                    </button>
                   )}
                 </div>
-              </div>
+              </form>
             </div>
           </div>
-        </motion.div>
+        </div>
       </div>
-    </div>
+    </>
   );
 };
 
